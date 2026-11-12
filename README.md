@@ -13,9 +13,27 @@ Send images, GIFs and videos from your computer or Android phone to a round Blue
 
 ---
 
+## Why badge/uploader?
+
+Compared with the badge's original phone app (NN family / beamBox):
+
+| | Original app | badge/uploader |
+|---|---|---|
+| Video length | cut to **3 seconds** | **as long as the badge's memory allows** (10 s and more tested) |
+| Frame rate | fixed | choose it – smooth presets calculated from your video |
+| Image quality | fixed | adjustable from 1 to 100, to make files smaller or sharper |
+| Preview | of the picture only | **live preview of the real result**, incl. quality and frame rate |
+| Not enough space | warning message | **checked before sending**, with one click to shorten to what fits |
+| Crop | basic | move, resize **and rotate** freely |
+| Runs on | iPhone / Android (iPhone app also on Apple-silicon Macs) | **any Mac, Windows PC, Chromebook or Android** with Chrome or Edge |
+| Account | sign-up or guest mode | **none** |
+| Internet | app with online features | **not needed** – works offline once loaded |
+| Your files | handled by the manufacturer's app | **never leave your device** |
+| Source code | closed | **open source** (MIT) |
+
 ## Features
 
-- **Images, GIFs and videos** (JPG, PNG, WebP, GIF, MP4, MOV) – videos are no longer limited to 3 seconds.
+- **Images, GIFs and videos** (JPG, PNG, WebP, GIF, MP4, MOV) – **videos longer than 3 seconds**.
 - **Live preview of the real result** – the circle shows exactly what the badge will display, including the chosen JPEG quality and frame rate.
 - **Crop** – move, resize and rotate. Desktop: drag, mouse wheel, double-click to reset. Phone: one finger to move, two fingers to resize and rotate, double-tap to reset.
 - **Smooth frame rates** – the frame-rate buttons are calculated from the source video (every 2nd, 3rd, 4th frame …), so motion stays even. Your own value can be typed in (max. 20 fps, never more than the source).
