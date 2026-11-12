@@ -20,9 +20,9 @@
 </p>
 
 <p align="center">
-  <img src="docs/desktop.png" alt="badge/uploader on a desktop browser" width="640">
-  &nbsp;
-  <img src="docs/mobile.png" alt="badge/uploader on an Android phone" width="200">
+  <img src="docs/desktop.png" alt="badge/uploader on a desktop browser" width="440">
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="docs/mobile.png" alt="badge/uploader on an Android phone" width="203">
 </p>
 
 ---
