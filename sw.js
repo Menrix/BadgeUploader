@@ -1,6 +1,6 @@
 // Offline support for the installed app: keeps a copy of the page and its icons.
 // Raise VERSION whenever index.html changes, so installed apps pick up the update.
-const VERSION = 'badge-uploader-v7';
+const VERSION = 'badge-uploader-1.0.0';
 const FILES = ['./', './index.html', './manifest.webmanifest',
   './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-192.png', './icons/maskable-512.png',
   './icons/apple-touch-icon.png', './icons/favicon-64.png'];

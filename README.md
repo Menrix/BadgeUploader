@@ -8,7 +8,7 @@ Send images, GIFs and videos from your computer or Android phone to a round Blue
   <img src="docs/mobile.png" alt="badge/uploader on an Android phone" width="200">
 </p>
 
-**Live version:** https://menrix.github.io/BadgeUploader/ – can be [installed as an app](#install-as-an-app-mac-windows-android).
+**Version 1.0.0** · **Live version:** https://menrix.github.io/BadgeUploader/ – can be [installed as an app](#install-as-an-app-mac-windows-android).
 (Or download `index.html` and open it in Chrome – the app itself is one single file.)
 
 ---
@@ -110,6 +110,10 @@ The page has no server, no tracking and no account. Your files never leave your 
 The Bluetooth protocol was worked out by recording the communication between the original app and the badge. It is plain and unencrypted: JSON commands plus JPEG images, split into small numbered packets with a simple checksum. Videos are sent as a sequence of JPEG frames.
 
 Details: **[PROTOCOL.md](PROTOCOL.md)**
+
+## Version history
+
+- **1.0.0** – first release: images, GIFs and videos, crop and rotate, galleries with mixed images and videos, own time per image, repeated videos, size check, installable as an app.
 
 ## Credits
 

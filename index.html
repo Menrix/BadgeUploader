@@ -28,6 +28,10 @@
   .top { padding:18px 28px 6px; display:flex; align-items:center; justify-content:center; }
   .logo { font-family:"Space Grotesk", Inter, sans-serif; font-weight:700; font-size:20px; letter-spacing:.2px; }
   .logo span { color:var(--acc); }
+  .top { flex-direction:column; gap:1px; }
+  .byline { font-size:11px; color:var(--dim2); letter-spacing:.3px; }
+  .compat a { color:var(--dim); }
+  .compat a:hover { color:var(--acc-text); }
   .col { width:100%; max-width:1000px; margin:0 auto; padding:0 28px; }
   .stack { display:flex; flex-direction:column; gap:14px; padding-top:8px; }
   .app.empty .stack { flex:1; justify-content:center; padding-bottom:40px; }
@@ -180,7 +184,7 @@
 <body>
 <div class="app empty" id="app">
   <div class="dropov" id="dropOv" hidden><span>Drop to add</span></div>
-  <header class="top"><span class="logo">badge<span>/</span>uploader</span></header>
+  <header class="top"><span class="logo">badge<span>/</span>uploader</span><span class="byline">v1.0.0 · by Don_Key_Moustache</span></header>
 
   <div class="col stack">
     <button id="btnConnect" class="connect"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7l10 10-5 5V2l5 5L7 17"></path></svg>Connect device</button>
@@ -200,7 +204,7 @@
         <span class="t3">JPG · PNG · WebP · GIF · MP4 · MOV</span>
       </span>
     </label>
-    <p class="compat" id="compat">Works with Bluetooth badges that use the <b>NN family</b> or <b>beamBox</b> app.</p>
+    <p class="compat" id="compat">Works with Bluetooth badges that use the <b>NN family</b> or <b>beamBox</b> app.<br>Made by Don_Key_Moustache · <a href="https://github.com/Menrix/BadgeUploader" target="_blank" rel="noopener">open source on GitHub</a></p>
   </div>
 
   <main id="editor" class="col editor" hidden>
