@@ -29,7 +29,7 @@
 
 ## ✨ Features
 
-| | |
+| Feature | |
 |---|---|
 | 🎬 **Long videos** | no 3-second limit – as long as the badge's memory allows |
 | 🖼️ **Mixed galleries** | images, GIFs and videos in one slideshow, always looping |
@@ -48,8 +48,8 @@
 | Galleries | images only, fixed 3 s | **images + videos**, own time per item, repeats |
 | Files | phone photo library | **any file**, drag & drop |
 | Quality & frame rate | fixed | **adjustable** |
-| Runs on | phone | **Mac, Windows, Chromebook, Android** |
-| Account / cloud | yes | **none** |
+| Runs on | iPhone / Android | **Mac, Windows, Chromebook, Android** |
+| Account / cloud | sign-up or guest mode | **none** |
 | Source code | closed | **open source** |
 
 ## 🚀 Get started
@@ -117,7 +117,7 @@ The protocol was worked out by recording the original app's Bluetooth traffic: p
 
 ## 🙌 Credits & license
 
-Made by **Don_Key_Moustache** · built with the help of [Claude Code](https://claude.com/claude-code) (Anthropic)
+Made by **Don_Key_Moustache** · built with the help of [Claude Code](https://claude.com/claude-code) (Anthropic)<br>
 [MIT license](LICENSE) – free to use, change and share, without warranty.
 
 <sub>Independent project – not affiliated with Beambox, Shenzhen Guangsheng Artificial Intelligence Technology Co., Ltd. or the sellers of these badges. Product names and trademarks belong to their owners and are only used to describe compatibility.</sub>
