@@ -8,7 +8,7 @@ Send images, GIFs and videos from your computer or Android phone to a round Blue
   <img src="docs/mobile.png" alt="badge/uploader on an Android phone" width="200">
 </p>
 
-**Live version:** https://menrix.github.io/badge-uploader/ – can be [installed as an app](#install-as-an-app-mac-windows-android).
+**Live version:** https://menrix.github.io/BadgeUploader/ – can be [installed as an app](#install-as-an-app-mac-windows-android).
 (Or download `index.html` and open it in Chrome – the app itself is one single file.)
 
 ---
@@ -42,7 +42,7 @@ Bluetooth in the browser (“Web Bluetooth”) is only available in Chromium-bas
 | Chrome / Edge / Opera | ✅ | ✅ | ✅ | ✅ | ⚠️ may need to be enabled in `chrome://flags` | ❌ |
 | Safari, Firefox | ❌ | ❌ | – | ❌ | ❌ | ❌ |
 
-On iPhone and iPad no browser supports Web Bluetooth.
+On iPhone and iPad, Safari, Chrome and all other regular browsers do not support Web Bluetooth (Apple requires all of them to use Safari's engine). Special browsers such as **Bluefy** (App Store) add Web Bluetooth themselves and might work – this is **untested**.
 On macOS, Chrome may ask for Bluetooth permission the first time (System Settings → Privacy & Security → Bluetooth).
 
 ## Install as an app (Mac, Windows, Android)
@@ -51,6 +51,7 @@ badge/uploader can be installed like a normal app – with its own icon in the D
 
 - **Mac / Windows (Chrome or Edge):** open the live version and click the install icon at the right end of the address bar (or menu ⋮ → *Cast, save and share* → *Install page as app*).
 - **Android (Chrome):** menu ⋮ → *Add to home screen* / *Install app*.
+- **iPhone / iPad:** not possible – see [Requirements](#requirements).
 
 Installing only works from the live version (https), not from a downloaded file.
 
