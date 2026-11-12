@@ -75,7 +75,7 @@ All numbers little-endian. For *n* frames:
 | 4 | 4 | `16 × (n + 1) + 8` |
 | 8 | 4 | number of frames *n* |
 | 12 | 4 | display time per frame in ms (e.g. 50 = 20 fps) |
-| 16 | 12 | name `"output/<ms>ms"`, zero padded |
+| 16 | 11 + 1 | name, always `"output/50ms"` + zero byte (the original app writes this even for other timings; the badge ignores it) |
 | 28 | 4 | total size of the container |
 | 32 + 16·i | 12 | frame name `"frame_00001."` (exactly 12 bytes, no terminator) |
 | 44 + 16·i | 4 | offset of frame *i* |
@@ -94,6 +94,20 @@ Frames start at offset `16 + 16 × (n + 1)`. Each frame has a 32-byte header fol
 | 24 | 8 | zero |
 
 The original app converts videos with ffmpeg into JPEG frames at 20 fps and cuts them to 3 s.
+
+### Gallery / slideshow
+
+There is no separate gallery command. The original app sends a gallery as a normal **video container**: one frame per image, and the display time per frame set to the slideshow interval (e.g. `3000` ms for 3 s per image). Recorded with three images: header `78 56 34 12 | 48 00 00 00 | 03 00 00 00 | B8 0B 00 00`, 31 411 bytes in 64 packets – badge/uploader produces exactly the same bytes.
+
+### Repeating frames without storing them twice
+
+All frames of one upload share the same display time. To show one picture longer (or play a video twice), frames are repeated. Tested on the badge (NIKKO):
+
+- **Every repeat needs its own 32-byte frame header** – the badge follows the *next* pointers of the frame headers, not the directory. Several directory entries pointing to the same header are played only once.
+- **The header's data offset is honoured** – a repeated frame can point to the JPEG data of an earlier frame. The picture is stored once; each repeat costs only 48 bytes (16 directory + 32 header).
+- Display times of 10 s per frame work.
+
+badge/uploader uses this for galleries: images and videos are put on one time grid (the video frame time, or – for images only – the largest time that divides all image times), and repeats point back to the stored picture.
 The badge itself accepted 10 s videos without problems; 30 fps played back with stutter.
 
 ## Notifications (badge → host)

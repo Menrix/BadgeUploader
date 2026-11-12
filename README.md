@@ -19,11 +19,13 @@ Compared with the badge's original phone app (NN family / beamBox):
 
 | | Original app | badge/uploader |
 |---|---|---|
+| Choosing files | only from the phone's photo library | **any file from your computer** – drag & drop, several at once |
 | Video length | cut to **3 seconds** | **as long as the badge's memory allows** (10 s and more tested) |
 | Frame rate | fixed | choose it – smooth presets calculated from your video |
 | Image quality | fixed | adjustable from 1 to 100, to make files smaller or sharper |
 | Preview | of the picture only | **live preview of the real result**, incl. quality and frame rate |
 | Not enough space | warning message | **checked before sending**, with one click to shorten to what fits |
+| Gallery / slideshow | images only, fixed 3 s per image | **images, GIFs and videos mixed**, time per image adjustable, **single images can stay longer**, **videos can play several times**, live slideshow preview, drag to reorder |
 | Crop | basic | move, resize **and rotate** freely |
 | Runs on | iPhone / Android (iPhone app also on Apple-silicon Macs) | **any Mac, Windows PC, Chromebook or Android** with Chrome or Edge |
 | Account | sign-up or guest mode | **none** |
@@ -34,6 +36,14 @@ Compared with the badge's original phone app (NN family / beamBox):
 ## Features
 
 - **Images, GIFs and videos** (JPG, PNG, WebP, GIF, MP4, MOV) – **videos longer than 3 seconds**.
+- **Gallery (slideshow)** – drop several files at once: images, GIFs and videos can be mixed. They appear as small thumbnails (videos with a ▶ sign); the preview plays them one after another and marks the current one. Click a thumbnail to stop on it and adjust it – click anywhere else and the slideshow plays on.
+  - Every item has its own crop.
+  - **Time per image** applies to all images; a single image can get its **own time** (marked with a small clock on its thumbnail).
+  - Videos and GIFs keep their own start and length and can **play several times** (1×, 2×, 3× …) before the next item.
+  - Drag thumbnails to change the order, remove one with its ×. All files sit in one **Files** block next to the preview – also a single file. Dropping more files anywhere on the page adds them; **Start over** begins with an empty page.
+  - Settings that do not fit the selected item (e.g. video settings while an image is selected) are dimmed.
+  - The gallery always loops on the badge. Repeated pictures are stored only once, so long images and repeated videos cost almost no memory.
+- **Files straight from your computer** – no need to copy them to a phone's photo library first.
 - **Live preview of the real result** – the circle shows exactly what the badge will display, including the chosen JPEG quality and frame rate.
 - **Crop** – move, resize and rotate. Desktop: drag, mouse wheel, double-click to reset. Phone: one finger to move, two fingers to resize and rotate, double-tap to reset.
 - **Smooth frame rates** – the frame-rate buttons are calculated from the source video (every 2nd, 3rd, 4th frame …), so motion stays even. Your own value can be typed in (max. 20 fps, never more than the source).
@@ -77,8 +87,8 @@ Installing only works from the live version (https), not from a downloaded file.
 
 1. **Close the manufacturer's app** – the badge accepts only one connection at a time.
 2. Open the page in Chrome and click **Connect device**. Choose your badge in the Bluetooth window.
-3. **Drop an image, GIF or video** onto the page (or click to choose a file).
-4. Adjust the crop, start and length, frames per second and quality. The preview shows the result.
+3. **Drop an image, GIF or video** onto the page (or click to choose a file). Several files at once become a **gallery**.
+4. Adjust the crop, start and length, frames per second (or the time per image) and quality. The preview shows the result.
 5. Click **Send to badge**.
 
 ### Tips
@@ -94,7 +104,6 @@ The page has no server, no tracking and no account. Your files never leave your 
 ## Limitations
 
 - The badge's content cannot be listed, downloaded or deleted from the page (the Bluetooth commands for that are unknown). Use the badge's own menu to delete files.
-- Gallery / slideshow mode of the original app is not supported yet.
 
 ## How it works
 

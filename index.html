@@ -51,15 +51,9 @@
   .drop .big .t2 { color:var(--dim); font-size:15px; }
   .drop .big .t2 u { color:var(--acc-text); font-weight:600; }
   .drop .big .t3 { color:var(--dim2); font-size:13px; letter-spacing:.3px; }
-  .drop .file { display:none; align-items:center; gap:12px; padding:0 18px; width:100%; flex-wrap:wrap; }
-  .drop .file .fname { font-weight:600; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; max-width:50%; }
-  .drop .file .chip { padding:3px 9px; background:#23252B; border-radius:999px; font-size:12px; color:var(--label); white-space:nowrap; }
-  .drop .file .repl { margin-left:auto; font-size:13px; color:var(--dim); }
-  .drop .file .repl u { color:var(--acc-text); font-weight:600; }
-  .drop.compact { height:64px; border-width:2px; border-color:#3A3D45; border-radius:16px; }
-  .drop.compact .big { display:none; }
-  .drop.compact .file { display:flex; }
 
+  .dropov { position:fixed; inset:10px; z-index:50; border:3px dashed var(--acc); border-radius:24px; background:rgba(16,17,19,.72); display:grid; place-items:center; pointer-events:none; }
+  .dropov span { font-family:"Space Grotesk", Inter, sans-serif; font-size:26px; font-weight:600; color:var(--acc-text); background:#1B1611; padding:14px 26px; border-radius:16px; }
   /* editor */
   .editor { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); align-items:start; gap:32px; padding-top:24px; padding-bottom:28px;
             opacity:0; transform:translateY(-18px); transition:opacity .35s ease .1s, transform .35s ease .1s; }
@@ -123,6 +117,35 @@
   .app:not(.empty) .compat { display:none; }
   .topmsg { font-size:13px; color:var(--err); text-align:center; }
 
+  /* gallery strip */
+  .strip { display:grid; grid-template-columns:repeat(auto-fill, minmax(64px, 1fr)); gap:8px; padding:6px; margin:-6px; border-radius:14px; border:2px dashed transparent; transition:border-color .15s, background .15s; }
+  .strip.hover { border-color:var(--acc); background:#1B1611; }
+  .thumb { position:relative; aspect-ratio:1 / 1; border-radius:12px; background:#0B0B0D; padding:0; outline:2px solid transparent; outline-offset:0; touch-action:pan-y; user-select:none; -webkit-user-select:none; -webkit-touch-callout:none; }
+  .thumb canvas { width:100%; height:100%; display:block; border-radius:12px; pointer-events:none; }
+  .thumb .no { position:absolute; left:5px; bottom:4px; font-size:11px; font-weight:700; color:#fff; text-shadow:0 1px 3px #000, 0 0 2px #000; pointer-events:none; }
+  .thumb[aria-current="true"] { outline-color:rgba(255,138,61,.55); }
+  .strip.editing .thumb[aria-current="true"] { outline-color:var(--acc); outline-width:3px; }
+  .thumb.dragging { opacity:.55; outline-color:var(--acc-text); outline-style:dashed; }
+  .thumb .x { position:absolute; top:-7px; right:-7px; width:24px; height:24px; border-radius:50%; background:#3A3D45; color:#fff; font-size:15px; line-height:24px; text-align:center; display:none; }
+  .thumb .x:hover { background:#D93A3A; }
+  .strip.editing .thumb[aria-current="true"] .x, .thumb:hover .x, .thumb:focus-within .x { display:block; }
+  .thumb { cursor:grab; }
+  .strip.solo .thumb .x { display:none !important; }
+  .finfo { font-size:13px; color:var(--label); overflow-wrap:anywhere; }
+  .finfo .d { color:var(--dim2); }
+  .newbtn { height:30px; padding:0 12px; border-radius:8px; background:#26282E; font-size:12px; font-weight:600; color:var(--label); }
+  .newbtn:hover { background:#30333A; color:var(--text); }
+  #galHead { align-items:center; }
+  .addtile { aspect-ratio:1 / 1; border-radius:12px; border:2px dashed #4A4D56; background:transparent; color:var(--acc-text); font-size:26px; font-weight:400; display:grid; place-items:center; }
+  .addtile:hover { border-color:var(--acc); background:#1B1611; }
+  .shint { font-size:12px; color:var(--dim2); }
+  .thumb .play { position:absolute; left:50%; top:50%; width:26px; height:26px; margin:-13px 0 0 -13px; border-radius:50%; background:rgba(10,10,12,.62); display:grid; place-items:center; pointer-events:none; }
+  .thumb .mark { position:absolute; right:3px; bottom:3px; min-width:18px; height:18px; padding:0 4px; border-radius:9px; background:var(--acc); color:var(--acc-ink); font-size:10px; font-weight:800; display:flex; align-items:center; justify-content:center; gap:2px; pointer-events:none; }
+  .off { opacity:.32; filter:saturate(.2); transition:opacity .15s; }
+  #itemHead .shint { color:var(--label); }
+  #itemHead .shint.none { color:var(--dim2); }
+  .seg.five { grid-template-columns:repeat(5, minmax(0, 1fr)); }
+
   /* ---------- phone ---------- */
   @media (max-width: 700px) {
     :root { --box:300px; --circle:252px; }
@@ -136,9 +159,6 @@
     .devbar button { height:32px; }
     .drop { height:300px; border-radius:24px; }
     .drop .big .t1 { font-size:22px; }
-    .drop.compact { height:52px; border-radius:14px; }
-    .drop .file { padding:0 12px; gap:8px; }
-    .drop .file .repl .long { display:none; }
     .editor { display:flex; flex-direction:column; flex-wrap:nowrap; gap:14px; padding-top:12px; padding-bottom:120px; }
     .stage { display:contents; }   /* lets the preview stay sticky over the whole editor */
     .stickywrap { position:sticky; top:0; z-index:5; background:var(--bg); padding:8px 0 12px; flex-direction:column; align-items:center; gap:8px;
@@ -159,6 +179,7 @@
 </head>
 <body>
 <div class="app empty" id="app">
+  <div class="dropov" id="dropOv" hidden><span>Drop to add</span></div>
   <header class="top"><span class="logo">badge<span>/</span>uploader</span></header>
 
   <div class="col stack">
@@ -170,17 +191,13 @@
     </div>
     <div id="topMsg" class="topmsg" hidden></div>
     <label id="drop" class="drop">
-      <input type="file" id="file" accept="image/*,video/*" hidden>
+      <input type="file" id="file" accept="image/*,video/*" multiple hidden>
       <span class="big">
         <span class="icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FF8A3D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4"></path><path d="M7 9l5-5 5 5"></path><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"></path></svg></span>
         <span class="t1">Drop an image, GIF or video</span>
+        <span class="t2" style="margin-top:-10px">Several files become a gallery</span>
         <span class="t2">or <u>choose a file</u></span>
         <span class="t3">JPG · PNG · WebP · GIF · MP4 · MOV</span>
-      </span>
-      <span class="file">
-        <span class="fname" id="fName"></span>
-        <span id="fChips" style="display:flex; gap:8px; flex-wrap:wrap"></span>
-        <span class="repl"><span class="long">Drop another file or </span><u>replace</u></span>
       </span>
     </label>
     <p class="compat" id="compat">Works with Bluetooth badges that use the <b>NN family</b> or <b>beamBox</b> app.</p>
@@ -206,21 +223,64 @@
     </section>
 
     <aside class="panel" aria-label="Settings">
-      <div class="group" id="timeOpts">
+      <div class="group" id="galOpts">
         <div class="field">
-          <div class="fhead"><label for="start">Start</label><span class="val"><input id="startNum" type="number" step="0.1" aria-label="Start in seconds">s</span></div>
-          <div class="sl"><span class="trk"></span><span class="fill" id="startFill"></span><input id="start" type="range" min="0" max="1" step="0.01" value="0"></div>
+          <div class="fhead" id="galHead"><span class="lbl">Files</span><button type="button" class="newbtn" id="btnNew">Start over</button></div>
+          <div class="strip" id="strip" aria-label="Files"></div>
+          <input type="file" id="fileAdd" accept="image/*,video/*" multiple hidden>
+          <span class="finfo" id="fileInfo"></span>
+          <span class="shint" id="galHint"></span>
         </div>
-        <div class="field">
-          <div class="fhead"><label for="len">Length</label><span class="val"><input id="lenNum" type="number" step="0.1" aria-label="Length in seconds">s</span></div>
-          <div class="sl"><span class="trk"></span><span class="fill" id="lenFill"></span><input id="len" type="range" min="0.1" max="1" step="0.01" value="1"></div>
+      </div>
+      <div class="group" id="itemOpts">
+        <div class="fhead" id="itemHead"><span class="lbl">Selected</span><span class="shint" id="itemWhat"></span></div>
+        <div class="field" id="imgTimeField">
+          <div class="fhead"><span class="lbl" id="imgTimeLbl">Time for this image</span><span class="val"><input id="itNum" type="number" step="0.5" aria-label="Seconds for this image">s</span></div>
+          <div class="seg five" id="itBtns" role="radiogroup" aria-label="Time for this image">
+            <button role="radio" aria-checked="true" data-v="d">Default</button>
+            <button role="radio" aria-checked="false" data-v="1">1 s</button>
+            <button role="radio" aria-checked="false" data-v="2">2 s</button>
+            <button role="radio" aria-checked="false" data-v="5">5 s</button>
+            <button role="radio" aria-checked="false" data-v="10">10 s</button>
+          </div>
         </div>
-        <button id="btnFull" class="btn soft">Use full length</button>
+        <div class="group" id="segOpts">
+          <div class="field">
+            <div class="fhead"><label for="start">Start</label><span class="val"><input id="startNum" type="number" step="0.1" aria-label="Start in seconds">s</span></div>
+            <div class="sl"><span class="trk"></span><span class="fill" id="startFill"></span><input id="start" type="range" min="0" max="1" step="0.01" value="0"></div>
+          </div>
+          <div class="field">
+            <div class="fhead"><label for="len">Length</label><span class="val"><input id="lenNum" type="number" step="0.1" aria-label="Length in seconds">s</span></div>
+            <div class="sl"><span class="trk"></span><span class="fill" id="lenFill"></span><input id="len" type="range" min="0.1" max="1" step="0.01" value="1"></div>
+          </div>
+        </div>
+        <div class="field" id="loopsField">
+          <div class="fhead"><span class="lbl" id="loopsLbl">Plays</span><span class="val"><input id="loopsNum" type="number" step="1" aria-label="How often this video plays">×</span></div>
+          <div class="seg" id="loopsBtns" role="radiogroup" aria-label="How often this video plays" style="grid-template-columns:repeat(4, minmax(0, 1fr))">
+            <button role="radio" aria-checked="true" data-v="1">1×</button>
+            <button role="radio" aria-checked="false" data-v="2">2×</button>
+            <button role="radio" aria-checked="false" data-v="3">3×</button>
+            <button role="radio" aria-checked="false" data-v="5">5×</button>
+          </div>
+        </div>
         <div class="divider"></div>
-        <div class="field">
+      </div>
+      <div class="group" id="globOpts">
+        <div class="field" id="ipiField">
+          <div class="fhead"><span class="lbl">Time per image</span><span class="val"><input id="ipiNum" type="number" step="0.5" aria-label="Seconds per image">s</span></div>
+          <div class="seg five" id="ipiBtns" role="radiogroup" aria-label="Time per image presets">
+            <button role="radio" aria-checked="false" data-v="1">1 s</button>
+            <button role="radio" aria-checked="false" data-v="2">2 s</button>
+            <button role="radio" aria-checked="true" data-v="3">3 s</button>
+            <button role="radio" aria-checked="false" data-v="5">5 s</button>
+            <button role="radio" aria-checked="false" data-v="10">10 s</button>
+          </div>
+        </div>
+        <div class="field" id="fpsField">
           <div class="fhead"><span class="lbl">Frames/sec</span><span class="val"><input id="fpsNum" type="number" step="1" aria-label="Frames per second">fps</span></div>
           <div class="seg" id="fpsBtns" role="radiogroup" aria-label="Frames per second presets" style="grid-template-columns:repeat(4, minmax(0, 1fr))"></div>
         </div>
+        <div class="divider"></div>
       </div>
       <div class="field">
         <div class="fhead"><label for="quality">Quality</label><span class="val"><input id="qualNum" type="number" aria-label="Quality"></span></div>
@@ -420,7 +480,7 @@ const BadgeCore = (() => {
     for (const j of jpegs) { offs.push(pos); pos += 32 + j.length; }
     const total = pos, out = new Uint8Array(total);
     u32(out, 0, 0x12345678); u32(out, 4, dirLen - 8); u32(out, 8, n); u32(out, 12, frameMs);
-    const name0 = enc.encode(('output/' + frameMs + 'ms').slice(0, 11));
+    const name0 = enc.encode('output/50ms');           // the original app always writes this name; timing is in the header
     out.set(name0, 16); u32(out, 28, total);
     for (let i = 0; i < n; i++) {
       const nm = enc.encode('frame_' + String(i + 1).padStart(5, '0') + '.');
@@ -455,6 +515,27 @@ const BadgeCore = (() => {
   const announce = () => enc.encode('{"type":6,"number":1}');
 
   function imageMessages(jpeg) { return [packets(6, announce()), packets(6, jsonData(6, wrapImage(jpeg)))]; }
+  // Frames with repeats: seq lists which JPEG each shown frame uses, e.g. [0,0,0,1,2,2].
+  // Every shown frame gets its own 32-byte header, but a repeated picture is stored only
+  // once – the header points back to it (tested on the badge: it reads the data offset).
+  // Without repeats this is byte-identical to wrapVideo.
+  function wrapFrames(jpegs, seq, frameMs) {
+    const n = seq.length, dirLen = 16 + 16 * (n + 1), dataAt = [], offs = [];
+    let pos = dirLen;
+    seq.forEach((j, i) => { offs.push(pos); pos += 32; if (dataAt[j] == null) { dataAt[j] = pos; pos += jpegs[j].length; } });
+    const out = new Uint8Array(pos), written = [];
+    u32(out, 0, 0x12345678); u32(out, 4, dirLen - 8); u32(out, 8, n); u32(out, 12, frameMs);
+    out.set(enc.encode('output/50ms'), 16); u32(out, 28, pos);
+    seq.forEach((j, i) => {
+      out.set(enc.encode('frame_' + String(i + 1).padStart(5, '0') + '.'), 32 + 16 * i); u32(out, 44 + 16 * i, offs[i]);
+      const o = offs[i];
+      u32(out, o, o); u32(out, o + 4, offs[(i + 1) % n]); u32(out, o + 8, 11); u16(out, o + 12, 360); u16(out, o + 14, 360);
+      u32(out, o + 16, dataAt[j]); u32(out, o + 20, jpegs[j].length);
+      if (!written[j]) { out.set(jpegs[j], dataAt[j]); written[j] = true; }
+    });
+    return out;
+  }
+  function framesMessages(jpegs, seq, frameMs) { return [packets(6, announce()), packets(5, jsonData(5, wrapFrames(jpegs, seq, frameMs)))]; }
   function videoMessages(jpegs, frameMs) { return [packets(6, announce()), packets(5, jsonData(5, wrapVideo(jpegs, frameMs)))]; }
 
   // Parse a notification from the badge: A0 | cmd | ... | {json} | checksum
@@ -471,7 +552,7 @@ const BadgeCore = (() => {
     return out;
   }
 
-  return { encodeJPEG, wrapImage, wrapVideo, packets, imageMessages, videoMessages, parseNotify, jsonData, CHUNK };
+  return { encodeJPEG, wrapImage, wrapVideo, wrapFrames, framesMessages, packets, imageMessages, videoMessages, parseNotify, jsonData, CHUNK };
 })();
 if (typeof module !== 'undefined') module.exports = BadgeCore;
 
@@ -493,6 +574,7 @@ if (typeof module !== 'undefined') module.exports = BadgeCore;
     size: 1, rot: 0, panX: 0, panY: 0,                // size 1 = fills the circle; pan in output px
     fps: 20, pace: 25, sending: false, cancel: false,
     alert: null, nofit: null, userDisc: false,      // alert: {type, text, action}
+    items: [], sel: 0, ipi: 3, editing: false, playStart: 0, animT0: 0, fpsSet: false,   // gallery: items, shown one, default seconds per image
   };
 
   // ======================= Bluetooth =======================
@@ -581,48 +663,31 @@ if (typeof module !== 'undefined') module.exports = BadgeCore;
     return waitAck(base + 2, 20000);
   }
 
-  // ======================= loading files =======================
-  async function loadFile(file) {
-    resetSource();
-    if (st.alert && st.alert.type === 'error') st.alert = null;
-    showMsg('');
-    try {
-      if (file.type.startsWith('video/') || /\.(mp4|mov|m4v|webm)$/i.test(file.name)) await loadVideo(file);
-      else if (/image\/(gif|webp|png)/.test(file.type) && 'ImageDecoder' in window && await loadAnimated(file)) { /* animated */ }
-      else await loadImage(file);
-    } catch (e) { showMsg('Could not open file: ' + e.message, true); return; }
+  // ======================= items =======================
+  // Everything that is loaded is a list of items (images, GIFs, videos). One file = a list
+  // of one, several files = a gallery. Each item keeps its own crop, an image its own
+  // display time (null = "Time per image"), a video/GIF its own start, length and loops.
+  // st.kind/img/video/anim/srcW/srcH and the crop in st always describe the item that is
+  // shown (st.sel); commitItem() writes edits back into that item.
+  const MAX_ITEMS = 60;
+  const isVideoFile = f => f.type.startsWith('video/') || /\.(mp4|mov|m4v|webm)$/i.test(f.name);
+  const isMotion = it => it.kind !== 'image';
+  const cur = () => st.items[st.sel];
+  const isGallery = () => st.items.length > 1;
+  let itemSeq = 0;
+  const baseItem = name => ({ id: ++itemSeq, name, crop: { size: 1, rot: 0, panX: 0, panY: 0 }, thumb: null, est: null, time: null, loops: 1, start: 0, len: 0 });
 
-    $('fName').textContent = file.name;
-    $('timeOpts').hidden = st.kind === 'image';
-    resetCrop();
-    if (st.kind !== 'image') setupTime();
-    renderChips();
-    // layout transition: drop zone shrinks, editor slides in
-    $('app').classList.remove('empty');
-    $('drop').classList.add('compact');
-    const ed = $('editor');
-    if (ed.hidden) { ed.hidden = false; requestAnimationFrame(() => requestAnimationFrame(() => ed.classList.add('show'))); }
-    sizeCanvas();
-    updateSendBtn();
-    updateEstimate();
-  }
-
-  function resetSource() {
-    if (st.video) { st.video.pause(); URL.revokeObjectURL(st.video.src); }
-    if (st.anim) st.anim.forEach(f => f.bmp.close && f.bmp.close());
-    if (st.img && st.img.close) st.img.close();
-    Object.assign(st, { kind: null, img: null, video: null, anim: null, animDur: 0, srcFps: null });
-    srcId++; encResult = null; EST.key = null; EST.avg = null; probe = null;
-  }
-  async function loadImage(file) {
+  async function decodeFile(file) {
+    if (isVideoFile(file)) return decodeVideo(file);
+    if (/image\/(gif|webp|png)/.test(file.type) && 'ImageDecoder' in window) { const it = await decodeAnimated(file); if (it) return it; }
     const bmp = await createImageBitmap(file);
-    Object.assign(st, { kind: 'image', img: bmp, srcW: bmp.width, srcH: bmp.height });
+    return Object.assign(baseItem(file.name), { kind: 'image', bmp, srcW: bmp.width, srcH: bmp.height });
   }
-  async function loadAnimated(file) {
+  async function decodeAnimated(file) {
     const dec = new ImageDecoder({ data: await file.arrayBuffer(), type: file.type });
     await dec.tracks.ready; await dec.completed;
     const count = dec.tracks.selectedTrack.frameCount;
-    if (count < 2) { dec.close(); return false; }
+    if (count < 2) { dec.close(); return null; }
     const frames = []; let t = 0;
     for (let i = 0; i < count; i++) {
       const { image } = await dec.decode({ frameIndex: i });
@@ -632,58 +697,358 @@ if (typeof module !== 'undefined') module.exports = BadgeCore;
     }
     dec.close();
     const d = frames.map(f => f.dur).sort((a, b) => a - b);
-    Object.assign(st, { kind: 'anim', anim: frames, animDur: t, srcW: frames[0].bmp.width, srcH: frames[0].bmp.height, srcFps: 1 / d[d.length >> 1] });
-    return true;
+    return Object.assign(baseItem(file.name), { kind: 'anim', anim: frames, animDur: t, srcW: frames[0].bmp.width, srcH: frames[0].bmp.height,
+      srcFps: roundFps(1 / d[d.length >> 1]), len: Math.min(t, 10) });
   }
-  function loadVideo(file) {
+  function decodeVideo(file) {
     return new Promise((res, rej) => {
       const v = document.createElement('video');
       v.muted = true; v.playsInline = true; v.loop = true; v.preload = 'auto';
       v.onloadeddata = () => {
-        Object.assign(st, { kind: 'video', video: v, srcW: v.videoWidth, srcH: v.videoHeight });
-        v.play().catch(() => {});
-        detectVideoFps(v);
-        res();
+        const it = Object.assign(baseItem(file.name), { kind: 'video', video: v, srcW: v.videoWidth, srcH: v.videoHeight, srcFps: null, len: Math.min(v.duration, 10) });
+        detectVideoFps(it);
+        res(it);
       };
       v.onerror = () => rej(new Error('video format not supported by Chrome'));
       v.src = URL.createObjectURL(file);
     });
   }
-  function detectVideoFps(v) {
-    if (!v.requestVideoFrameCallback) { st.srcFps = 30; afterFps(); return; }
+  const roundFps = f => Math.abs(f - Math.round(f)) < 0.1 ? Math.round(f) : f;     // 29.97 -> 30
+  // the frame rate is measured while the video plays (muted, off screen)
+  function detectVideoFps(it) {
+    const v = it.video;
+    const done = fps => {
+      if (it.srcFps || it.dead) return;
+      it.srcFps = roundFps(fps);
+      it.thumb = null;                       // the first frame is surely decoded now: redraw the thumbnail
+      if (cur() !== it) { v.currentTime = it.start; v.pause(); }
+      v.addEventListener('seeked', () => { if (!it.dead) { drawThumb(it); renderGallery(); } }, { once: true });
+      renderGallery();
+      afterFps(it);
+    };
+    if (!v.requestVideoFrameCallback) { setTimeout(() => done(30), 0); return; }
     const gaps = []; let last = null;
     const cb = (now, meta) => {
-      if (st.video !== v) return;
+      if (it.dead || it.srcFps) return;
       if (last && meta.presentedFrames === last.n + 1 && meta.mediaTime > last.t) gaps.push(meta.mediaTime - last.t);
       last = { n: meta.presentedFrames, t: meta.mediaTime };
       if (gaps.length < 24) v.requestVideoFrameCallback(cb);
-      else { gaps.sort((a, b) => a - b); st.srcFps = 1 / gaps[gaps.length >> 1]; afterFps(); }
+      else { gaps.sort((a, b) => a - b); done(1 / gaps[gaps.length >> 1]); }
     };
     v.requestVideoFrameCallback(cb);
-    setTimeout(() => { if (st.video === v && !st.srcFps) { st.srcFps = 30; afterFps(); } }, 4000);
+    v.play().catch(() => {});
+    setTimeout(() => done(30), 4000);
   }
-  function afterFps() {
-    // round 29.97 -> 30, 23.976 -> 24
-    if (Math.abs(st.srcFps - Math.round(st.srcFps)) < 0.1) st.srcFps = Math.round(st.srcFps);
-    renderChips(); buildFpsPresets(true); updateEstimate();
+  function afterFps(it) {
+    if (cur() === it) st.srcFps = it.srcFps;
+    buildFpsPresets(!st.fpsSet);
+    renderChips(); updateEstimate();
   }
-  const duration = () => st.kind === 'video' ? st.video.duration : st.kind === 'anim' ? st.animDur : 0;
-
-  function renderChips() {
-    const chips = [];
-    if (st.kind !== 'image') {
-      chips.push(duration().toFixed(1) + ' s');
-      chips.push(st.srcFps ? (Math.round(st.srcFps * 10) / 10) + ' fps' : '… fps');
+  function disposeItem(it) {
+    it.dead = true;
+    if (it.video) { it.video.pause(); URL.revokeObjectURL(it.video.src); }
+    if (it.anim) it.anim.forEach(f => f.bmp.close && f.bmp.close());
+    if (it.bmp && it.bmp.close) it.bmp.close();
+  }
+  async function decodeAll(files) {
+    const items = []; let failed = 0, err = '';
+    for (const f of files) {
+      try { items.push(await decodeFile(f)); } catch (e) { failed++; err = e.message; }
     }
-    $('fChips').innerHTML = chips.map(c => `<span class="chip">${c}</span>`).join('');
+    return { items, failed, err };
+  }
+  function loadNote(failed, over) {
+    const t = [];
+    if (failed > 0) t.push(`${failed} file${failed > 1 ? 's' : ''} could not be opened.`);
+    if (over > 0) t.push(`Only the first ${MAX_ITEMS} files were used.`);
+    if (t.length) showMsg(t.join(' '));
+  }
+
+  // new selection: replaces everything
+  async function loadFiles(list) {
+    const files = [...list]; if (!files.length) return;
+    resetSource();
+    if (st.alert && st.alert.type === 'error') st.alert = null;
+    showMsg('');
+    const { items, failed, err } = await decodeAll(files.slice(0, MAX_ITEMS));
+    if (!items.length) { showMsg(files.length > 1 ? 'Could not open these files.' : 'Could not open file: ' + err, true); return; }
+    st.items = items; st.sel = 0;
+    afterLoad();
+    loadNote(items.length > 0 ? failed : 0, files.length - MAX_ITEMS);
+  }
+  const loadFile = f => loadFiles([f]);
+  // more files into the gallery (dropped on the strip, or the + tile)
+  async function addFiles(list) {
+    if (!st.kind) return loadFiles(list);
+    const files = [...list], room = MAX_ITEMS - st.items.length;
+    const { items, failed } = await decodeAll(files.slice(0, Math.max(0, room)));
+    showMsg('');
+    if (items.length) {
+      commitItem();
+      const first = st.items.length;
+      st.items.push(...items);
+      applyItem(first); pause();                         // show the first new one, ready to adjust
+      buildFpsPresets(!st.fpsSet);
+      renderGallery(); renderChips(); updateEstimate();
+    }
+    loadNote(failed, files.length - Math.max(0, room));
+  }
+
+  function afterLoad() {
+    st.editing = false; st.playStart = performance.now();
+    applyItem(0);
+    buildFpsPresets(!st.fpsSet);
+    renderGallery(); renderChips();
+    // layout transition: drop zone shrinks, editor slides in
+    $('app').classList.remove('empty');
+    $('drop').hidden = true;                           // from now on files live in the Files block
+    const ed = $('editor');
+    if (ed.hidden) { ed.hidden = false; requestAnimationFrame(() => requestAnimationFrame(() => ed.classList.add('show'))); }
+    sizeCanvas();
+    updateSendBtn();
+    updateEstimate();
+  }
+
+  function resetSource() {
+    st.items.forEach(disposeItem);
+    Object.assign(st, { kind: null, img: null, video: null, anim: null, animDur: 0, srcFps: null, items: [], sel: 0, editing: false, fpsSet: false });
+    srcId++; encResult = null; probe = null;
+  }
+
+  function commitItem() {
+    const it = cur(); if (!it || !st.kind) return;
+    it.crop = { size: st.size, rot: st.rot, panX: st.panX, panY: st.panY };
+    if (isMotion(it)) { it.start = +$('start').value; it.len = +$('len').value; }
+  }
+  function applyItem(i) {                       // show item i (does not save the previous one)
+    const it = st.items[i]; if (!it) return;
+    if (st.video && st.video !== it.video) st.video.pause();
+    st.sel = i;
+    Object.assign(st, { kind: it.kind, img: it.bmp || null, video: it.video || null, anim: it.anim || null, animDur: it.animDur || 0,
+      srcW: it.srcW, srcH: it.srcH, srcFps: it.srcFps || null, panX: it.crop.panX, panY: it.crop.panY });
+    setRot(it.crop.rot); setSize(it.crop.size);
+    if (isMotion(it)) {
+      setupTime(it);
+      if (it.video) { it.video.currentTime = it.start; it.video.play().catch(() => {}); }
+      st.animT0 = performance.now();
+    }
+    markThumbs(); renderItemOpts();
+  }
+  // run fn with the crop and size of another item, then restore (synchronous only)
+  function withItem(it, fn) {
+    commitItem();
+    const keep = { srcW: st.srcW, srcH: st.srcH, size: st.size, rot: st.rot, panX: st.panX, panY: st.panY };
+    Object.assign(st, { srcW: it.srcW, srcH: it.srcH }, it.crop);
+    try { return fn(); } finally { Object.assign(st, keep); }
+  }
+  const srcDuration = it => it.kind === 'video' ? it.video.duration : it.kind === 'anim' ? it.animDur : 0;
+  const duration = () => cur() ? srcDuration(cur()) : 0;
+  // how long an item is on screen in the gallery
+  const showTime = it => it.kind === 'image' ? (it.time != null ? it.time : st.ipi) : it.len * it.loops;
+  const loopLen = () => st.items.reduce((a, it) => a + showTime(it), 0);
+  const offsetOf = i => st.items.slice(0, i).reduce((a, it) => a + showTime(it), 0);
+
+  // ---------- gallery playback ----------
+  // The preview plays the items one after another; clicking a thumbnail (or touching the
+  // preview / crop controls / the item's settings) pauses on that item, clicking anywhere
+  // else plays on from there.
+  function restartAt(i) {
+    st.playStart = performance.now() - offsetOf(i) * 1000;
+    const it = st.items[i];
+    if (it && it.video && !st.sending) it.video.currentTime = it.start;
+    st.animT0 = performance.now();
+  }
+  function pause() { if (!isGallery() || st.editing) return; st.editing = true; markThumbs(); renderItemOpts(); }
+  function play() {
+    if (!st.editing) return;
+    commitItem(); st.editing = false;
+    restartAt(st.sel);
+    markThumbs(); renderItemOpts();
+  }
+  function selectItem(i) {
+    if (i !== st.sel) { commitItem(); applyItem(i); }
+    pause();
+  }
+  function tickGallery(now) {                   // called every frame from the preview loop
+    if (!isGallery() || st.editing || st.sending) return;
+    const L = loopLen(); if (!(L > 0)) return;
+    let t = ((now - st.playStart) / 1000) % L, i = 0;
+    while (i < st.items.length - 1 && t >= showTime(st.items[i])) { t -= showTime(st.items[i]); i++; }
+    if (i !== st.sel) { commitItem(); applyItem(i); }
+  }
+
+  // ---------- settings of one item / of the whole gallery ----------
+  function setIpi(v) {
+    st.ipi = clamp(Math.round(v * 10) / 10, 0.1, 60);
+    st.items.forEach(it => { if (it.time === st.ipi) it.time = null; });   // same as the default = no own time any more
+    restartAt(st.sel);
+    renderGallery(); renderChips(); renderItemOpts(); renderEstimate();
+  }
+  function setItemTime(v) {                     // null = use "Time per image"
+    const it = cur(); if (!it || it.kind !== 'image') return;
+    it.time = v == null ? null : clamp(Math.round(v * 10) / 10, 0.1, 60);
+    if (it.time === st.ipi) it.time = null;
+    renderGallery(); renderChips(); renderItemOpts(); renderEstimate();
+  }
+  function setLoops(v) {
+    const it = cur(); if (!it || !isMotion(it)) return;
+    it.loops = clamp(Math.round(v), 1, 20);
+    renderGallery(); renderChips(); renderItemOpts(); renderEstimate();
+  }
+  const checkSeg = (id, match) => [...$(id).children].forEach(b => b.setAttribute('aria-checked', match(b.dataset.v) ? 'true' : 'false'));
+  // Which settings are shown depends on what was loaded:
+  //  one image: nothing extra · one video/GIF: start, length, frames/sec
+  //  gallery: the "Selected" block holds the settings of single items – image settings only
+  //  if there are images, video settings only if there are videos. They stay in place and
+  //  are dimmed when they do not fit the selected item (or while the gallery plays).
+  function setOff(el, off) { el.classList.toggle('off', off); el.inert = off; }
+  function renderItemOpts() {
+    const it = cur(); if (!it) return;
+    const gal = isGallery(), motion = isMotion(it), edit = gal && st.editing;
+    const hasImg = st.items.some(x => x.kind === 'image'), hasMot = st.items.some(isMotion);
+    $('itemHead').hidden = !gal;
+    $('imgTimeField').hidden = !(gal && hasImg);
+    $('segOpts').hidden = gal ? !hasMot : !motion;
+    $('loopsField').hidden = !(gal && hasMot);
+    setOff($('imgTimeField'), gal && !(edit && !motion));
+    setOff($('segOpts'), gal && !(edit && motion));
+    setOff($('loopsField'), gal && !(edit && motion));
+    $('itemOpts').hidden = $('imgTimeField').hidden && $('segOpts').hidden;
+    $('ipiField').hidden = !(gal && hasImg);
+    $('fpsField').hidden = !hasMot;
+    $('globOpts').hidden = $('ipiField').hidden && $('fpsField').hidden;
+    $('ipiNum').value = st.ipi;
+    checkSeg('ipiBtns', v => +v === st.ipi);
+    const what = $('itemWhat');
+    what.textContent = edit ? `${motion ? 'Video' : 'Image'} ${st.sel + 1}` : 'none – click a thumbnail';
+    what.classList.toggle('none', !edit);
+    // values: only for the matching kind, otherwise empty
+    if (!motion) {
+      $('itNum').value = showTime(it);
+      checkSeg('itBtns', v => v === 'd' ? it.time == null : it.time != null && +v === it.time);
+      if (gal) { $('startNum').value = ''; $('lenNum').value = ''; $('loopsNum').value = ''; checkSeg('loopsBtns', () => false); }
+    } else {
+      $('loopsNum').value = it.loops;
+      checkSeg('loopsBtns', v => +v === it.loops);
+      $('itNum').value = ''; checkSeg('itBtns', () => false);
+    }
+  }
+
+  // ---------- thumbnails ----------
+  const ICON_PLAY = '<svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M3 1.5v9l7.5-4.5z" fill="#fff"/></svg>';
+  const ICON_CLOCK = '<svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="6" cy="6" r="4.6"/><path d="M6 3.4V6l1.8 1.2"/></svg>';
+  function thumbSource(it) {
+    if (it.kind === 'image') return it.bmp;
+    if (it.kind === 'anim') return animFrameAt(it.start, it.anim);
+    return it.video.readyState >= 2 ? it.video : null;
+  }
+  function drawThumb(it) {
+    const src = thumbSource(it); if (!src) return;
+    if (!it.thumb) { it.thumb = document.createElement('canvas'); it.thumb.width = it.thumb.height = 128; }
+    const c = it.thumb.getContext('2d');
+    c.setTransform(1, 0, 0, 1, 0, 0); c.fillStyle = '#0B0B0D'; c.fillRect(0, 0, 128, 128);
+    c.save(); c.beginPath(); c.arc(64, 64, 61, 0, Math.PI * 2); c.clip(); c.scale(128 / OUT, 128 / OUT);
+    withItem(it, () => drawTransformed(c, src));
+    c.restore();
+  }
+  function renderGallery() {
+    if (!st.kind) return;
+    const strip = $('strip'), n = st.items.length;
+    strip.textContent = '';
+    strip.classList.toggle('solo', n === 1);
+    st.items.forEach((it, i) => {
+      if (!it.thumb) drawThumb(it);
+      const b = document.createElement('div');
+      b.className = 'thumb'; b.tabIndex = 0; b.dataset.i = i; b.setAttribute('role', 'button');
+      b.setAttribute('aria-label', `${isMotion(it) ? 'Video' : 'Image'} ${i + 1}: ${it.name}`);
+      if (drag && drag.active && drag.id === it.id) b.classList.add('dragging');
+      if (it.thumb) b.appendChild(it.thumb);
+      if (isMotion(it)) { const p = document.createElement('span'); p.className = 'play'; p.innerHTML = ICON_PLAY; b.appendChild(p); }
+      // a small orange mark when this item has its own time / plays more than once
+      if (n > 1 && it.kind === 'image' && it.time != null) { const m = document.createElement('span'); m.className = 'mark'; m.title = `Own time: ${fmtSec(it.time)}`; m.innerHTML = ICON_CLOCK; b.appendChild(m); }
+      if (n > 1 && isMotion(it) && it.loops > 1) { const m = document.createElement('span'); m.className = 'mark'; m.title = `Plays ${it.loops}×`; m.textContent = it.loops + '×'; b.appendChild(m); }
+      const no = document.createElement('span'); no.className = 'no'; no.textContent = i + 1; b.appendChild(no);
+      const x = document.createElement('button'); x.className = 'x'; x.textContent = '×'; x.title = 'Remove';
+      x.dataset.remove = i; x.setAttribute('aria-label', `Remove item ${i + 1}`); b.appendChild(x);
+      strip.appendChild(b);
+    });
+    if (n < MAX_ITEMS) {
+      const add = document.createElement('button');
+      add.className = 'addtile'; add.title = 'Add images or videos'; add.setAttribute('aria-label', 'Add images or videos');
+      add.textContent = '+';
+      add.dataset.add = 1; strip.appendChild(add);
+    }
+    markThumbs(); renderItemOpts();
+  }
+  function markThumbs() {
+    const n = st.items.length;
+    [...$('strip').querySelectorAll('.thumb')].forEach((b, i) => b.setAttribute('aria-current', i === st.sel ? 'true' : 'false'));
+    $('strip').classList.toggle('editing', st.editing || n === 1);
+    $('galHint').textContent = n < 2 ? 'Add more files to make a gallery.'
+      : st.editing ? `Editing item ${st.sel + 1} · click anywhere else to play on`
+      : (isPhone() ? 'Tap to adjust · hold and drag to reorder · × removes' : 'Click to adjust · drag to reorder · × removes · drop files to add');
+  }
+  function moveItem(from, to) {
+    commitItem();
+    const selId = cur().id, [it] = st.items.splice(from, 1);
+    st.items.splice(to, 0, it);
+    st.sel = st.items.findIndex(x => x.id === selId);
+    if (!st.editing) restartAt(st.sel);
+    renderGallery();
+  }
+  function removeItem(i) {
+    if (st.items.length < 2) return;
+    commitItem();
+    const [it] = st.items.splice(i, 1);
+    disposeItem(it);
+    let sel = st.sel;
+    if (i < sel) sel--; else if (i === sel) sel = Math.min(i, st.items.length - 1);
+    if (i === st.sel) st.video = null;                 // its video is gone
+    applyItem(sel);
+    if (st.items.length < 2) st.editing = false;
+    buildFpsPresets(!st.fpsSet);
+    renderGallery(); renderChips(); updateEstimate();
+  }
+
+  // ---------- reorder by dragging (mouse: just drag · touch: hold, then drag) ----------
+  let drag = null, lastDragEnd = 0;
+  function startDrag() { drag.active = true; pause(); if (navigator.vibrate) navigator.vibrate(12); renderGallery(); }
+  function endDrag() {
+    if (!drag) return;
+    clearTimeout(drag.timer);
+    const was = drag.active; drag = null;
+    if (was) { lastDragEnd = performance.now(); renderGallery(); }
+  }
+
+  const fmtSec = s => s < 60 ? (Math.round(s * 10) / 10) + ' s' : Math.floor(s / 60) + ':' + String(Math.round(s % 60)).padStart(2, '0') + ' min';
+  // the info line under the thumbnails
+  function renderChips() {
+    const it = cur(); if (!it) return;
+    const n = st.items.length, esc = t => t.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+    let main, extra = [];
+    if (n > 1) {
+      const ni = st.items.filter(x => x.kind === 'image').length, nv = n - ni, parts = [];
+      if (ni) parts.push(`${ni} image${ni > 1 ? 's' : ''}`);
+      if (nv) parts.push(`${nv} video${nv > 1 ? 's' : ''}`);
+      main = parts.join(', '); extra.push(fmtSec(loopLen()) + ' loop');
+    } else {
+      main = esc(it.name);
+      if (isMotion(it)) extra.push(srcDuration(it).toFixed(1) + ' s');
+      else extra.push(`${it.srcW} × ${it.srcH}`);
+    }
+    $('fileInfo').innerHTML = main + extra.map(x => ` <span class="d">· ${x}</span>`).join('');
   }
 
   // ======================= frames per second =======================
+  // One frame rate for all videos (the badge has a single frame time per upload).
   // Presets: the highest usable rate, then the source rate divided by 2, 3, 4 …
   // Divisors keep every n-th source frame, so motion stays even.
   let presets = [];
+  const refItem = () => st.items.find(it => isMotion(it) && it.srcFps) || st.items.find(isMotion);
+  const refFps = () => (refItem() && refItem().srcFps) || 30;
   function buildFpsPresets(selectDefault) {
-    const src = st.srcFps || 30, top = Math.min(src, MAX_FPS);
+    if (!st.items.some(isMotion)) return;
+    const src = refFps(), top = Math.min(src, MAX_FPS);
     presets = [top];
     for (let k = 2; presets.length < 4 && k < 60; k++) {
       const v = src / k;
@@ -694,7 +1059,9 @@ if (typeof module !== 'undefined') module.exports = BadgeCore;
       // default: the highest exact divisor of the source (smooth), e.g. 25 -> 12.5, 30 -> 15, 20 -> 20
       let k = 1; while (src / k > MAX_FPS + 0.01) k++;
       st.fps = src / k;
+      if (refItem() && refItem().srcFps) st.fpsSet = true;   // only final once the real rate is known
     }
+    st.fps = clamp(st.fps, 1, maxFps());
     $('fpsBtns').style.gridTemplateColumns = `repeat(${Math.max(presets.length, 1)}, minmax(0, 1fr))`;
     $('fpsBtns').innerHTML = presets.map((v, i) => `<button role="radio" data-i="${i}" aria-checked="false">${Math.round(v)}</button>`).join('');
     syncFps();
@@ -703,15 +1070,15 @@ if (typeof module !== 'undefined') module.exports = BadgeCore;
     $('fpsNum').value = Math.round(st.fps * 10) / 10;
     [...$('fpsBtns').children].forEach((b, i) => b.setAttribute('aria-checked', Math.abs(presets[i] - st.fps) < 0.01 ? 'true' : 'false'));
   }
-  const maxFps = () => Math.min(st.srcFps || MAX_FPS, MAX_FPS);
+  // never more than 20, and never more than the fastest source
+  const maxFps = () => Math.min(MAX_FPS, Math.max(...st.items.filter(isMotion).map(it => it.srcFps || MAX_FPS), 1));
 
-  // ======================= time =======================
-  function setupTime() {
-    const d = duration();
-    $('start').max = Math.max(0, d - 0.1); $('start').value = 0;
-    $('len').max = d; $('len').value = Math.min(d, 10);
+  // ======================= time (start / length of a video) =======================
+  function setupTime(it) {
+    const d = srcDuration(it);
+    $('start').max = Math.max(0, d - 0.1); $('start').value = it.start;
+    $('len').max = d; $('len').value = it.len;
     syncTime();
-    if (st.kind === 'anim') buildFpsPresets(true); else buildFpsPresets(true);
   }
   function syncTime() {
     const d = duration(), s = +$('start').value;
@@ -719,6 +1086,7 @@ if (typeof module !== 'undefined') module.exports = BadgeCore;
     $('startNum').value = s.toFixed(1); $('lenNum').value = (+$('len').value).toFixed(1);
     fill('start'); fill('len');
   }
+  function timeChanged() { syncTime(); commitItem(); markThumbs(); renderChips(); updateEstimate(); }
 
   // ======================= crop (size / rotate / pan) =======================
   // size slider: -1..1 maps to 50 %..200 % (log scale), typed values may go beyond
@@ -729,7 +1097,7 @@ if (typeof module !== 'undefined') module.exports = BadgeCore;
     for (const snap of [-180, -90, 0, 90, 180]) if (Math.abs(r - snap) < 2) r = snap;
     st.rot = r; $('rot').value = r; $('rotNum').value = Math.round(r * 10) / 10; fill('rot'); updateEstimate();
   }
-  function resetCrop() { st.panX = 0; st.panY = 0; setRot(0); setSize(1); }
+  function resetCrop() { st.panX = 0; st.panY = 0; setRot(0); setSize(1); commitItem(); updateEstimate(); }
 
   function fill(id) {
     const el = $(id), f = $(id + 'Fill'); if (!f) return;
@@ -749,15 +1117,15 @@ if (typeof module !== 'undefined') module.exports = BadgeCore;
     ctx.drawImage(source, -st.srcW / 2, -st.srcH / 2, st.srcW, st.srcH);
     ctx.restore();
   }
-  function animFrameAt(t) {
-    const f = st.anim; let lo = 0, hi = f.length - 1;
+  function animFrameAt(t, anim) {
+    const f = anim || st.anim; let lo = 0, hi = f.length - 1;
     while (lo < hi) { const m = (lo + hi + 1) >> 1; if (f[m].start <= t) lo = m; else hi = m - 1; }
     return f[lo].bmp;
   }
   function currentSource(ts) {
     if (st.kind === 'image') return st.img;
     if (st.kind === 'video') return st.video.readyState >= 2 ? st.video : null;
-    if (st.kind === 'anim') { const s = +$('start').value, l = Math.max(0.05, +$('len').value); return animFrameAt(s + ((ts / 1000) % l)); }
+    if (st.kind === 'anim') { const s = +$('start').value, l = Math.max(0.05, +$('len').value); return animFrameAt(s + (((ts - (st.animT0 || 0)) / 1000) % l)); }
     return null;
   }
 
@@ -782,13 +1150,13 @@ if (typeof module !== 'undefined') module.exports = BadgeCore;
   const touch = () => { lastInteract = performance.now(); };
   function frameKey(ts) {
     const crop = [st.size, st.rot, st.panX, st.panY, quality()].map(v => Math.round(v * 1000)).join(',');
-    if (st.kind === 'image') return { base: `i|${srcId}|` + crop, key: `i|${srcId}|` + crop, t: 0 };
+    if (st.kind === 'image') { const b = `i|${srcId}|${cur().id}|` + crop; return { base: b, key: b, t: 0 }; }
     const s = +$('start').value, l = Math.max(0.05, +$('len').value);
     let t;
     if (st.kind === 'video') t = st.video.currentTime - s;
-    else t = (ts / 1000) % l;
+    else t = ((ts - (st.animT0 || 0)) / 1000) % l;
     const idx = Math.max(0, Math.floor(t * st.fps));
-    const base = `${st.kind}|${srcId}|${st.fps}|` + crop;
+    const base = `${st.kind}|${srcId}|${cur().id}|${st.fps}|` + crop;
     return { base, key: base + '|' + idx, t: s + idx / st.fps };
   }
   let srcId = 0;
@@ -805,6 +1173,7 @@ if (typeof module !== 'undefined') module.exports = BadgeCore;
 
   function drawPreview(ts) {
     if (st.kind) {
+      tickGallery(performance.now());
       if (st.kind === 'video' && st.video.readyState >= 2 && !st.sending) {
         const s = +$('start').value, l = +$('len').value;
         if (st.video.currentTime < s - 0.05 || st.video.currentTime > s + l) st.video.currentTime = s;
@@ -837,6 +1206,14 @@ if (typeof module !== 'undefined') module.exports = BadgeCore;
       pctx.fillStyle = 'rgba(8,8,10,.68)'; pctx.fill('evenodd');
       pctx.beginPath(); pctx.arc(boxPx / 2, boxPx / 2, circlePx / 2, 0, Math.PI * 2);
       pctx.strokeStyle = 'rgba(255,255,255,.4)'; pctx.lineWidth = 1.5; pctx.stroke();
+      if (isGallery()) {                                  // "2 / 5" – "Editing 2 / 5" while the slideshow waits on this item
+        const label = (st.editing ? 'Editing  ' : '') + (st.sel + 1) + ' / ' + st.items.length;
+        pctx.font = '600 12px Inter, system-ui, sans-serif'; pctx.textAlign = 'center'; pctx.textBaseline = 'middle';
+        const w = pctx.measureText(label).width + 20, y = (boxPx - circlePx) / 4;
+        pctx.fillStyle = st.editing ? 'rgba(255,138,61,.95)' : 'rgba(20,21,24,.85)';
+        pctx.beginPath(); pctx.roundRect ? pctx.roundRect(boxPx / 2 - w / 2, y - 11, w, 22, 11) : pctx.rect(boxPx / 2 - w / 2, y - 11, w, 22); pctx.fill();
+        pctx.fillStyle = st.editing ? '#1A1206' : '#EEEEF0'; pctx.fillText(label, boxPx / 2, y + 0.5);
+      }
     }
     requestAnimationFrame(drawPreview);
   }
@@ -857,6 +1234,7 @@ if (typeof module !== 'undefined') module.exports = BadgeCore;
   }
   pv.addEventListener('pointerdown', e => {
     if (!st.kind) return;
+    pause();
     pv.setPointerCapture(e.pointerId);
     pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     gestureStart();
@@ -887,7 +1265,7 @@ if (typeof module !== 'undefined') module.exports = BadgeCore;
   };
   pv.addEventListener('pointerup', endPointer); pv.addEventListener('pointercancel', endPointer);
   pv.addEventListener('dblclick', () => st.kind && resetCrop());
-  pv.addEventListener('wheel', e => { if (!st.kind) return; e.preventDefault(); touch(); setSize(st.size * Math.exp(-e.deltaY * 0.002)); }, { passive: false });
+  pv.addEventListener('wheel', e => { if (!st.kind) return; e.preventDefault(); touch(); pause(); setSize(st.size * Math.exp(-e.deltaY * 0.002)); }, { passive: false });
 
   // ---------- phone: preview stays on top and shrinks while scrolling ----------
   function onScroll() {
@@ -897,6 +1275,7 @@ if (typeof module !== 'undefined') module.exports = BadgeCore;
     box.style.transform = `scale(${s})`; holder.style.height = (box.offsetWidth * s) + 'px';   // real size, not a cached value
   }
   window.addEventListener('scroll', onScroll, { passive: true });
+
 
   // ======================= encoding =======================
   const work = document.createElement('canvas'); work.width = work.height = OUT;
@@ -911,55 +1290,76 @@ if (typeof module !== 'undefined') module.exports = BadgeCore;
   function seek(v, t) {
     return new Promise(res => { const h = () => { v.removeEventListener('seeked', h); res(); }; v.addEventListener('seeked', h); v.currentTime = t; });
   }
-  const frameCount = () => Math.max(1, Math.round(+$('len').value * st.fps));
-  // sample time of output frame i; the small offset lands safely inside the source frame
-  const sampleTime = i => +$('start').value + i / st.fps + 0.25 / (st.srcFps || 30);
-  async function buildFrames(onProgress) {
-    const n = frameCount(), out = [];
-    if (st.kind === 'video') {
-      const v = st.video; v.pause();
-      for (let i = 0; i < n; i++) {
+  // sample time of output frame i of a video/GIF; the small offset lands safely inside the source frame
+  const sampleTime = (it, i) => it.start + i / st.fps + 0.25 / (it.srcFps || 30);
+
+  // The badge plays all frames of one upload with the same frame time. Images that stay
+  // longer and videos that play several times repeat frames – a repeated picture is stored
+  // only once (BadgeCore.wrapFrames), so this costs almost no memory.
+  const gcd = (a, b) => b ? gcd(b, a % b) : a;
+  function planInfo() {
+    const items = st.items, motion = items.some(isMotion);
+    const ms = motion ? Math.round(1000 / st.fps)
+      : Math.max(100, items.map(it => Math.round(showTime(it) * 10) * 100).reduce(gcd));
+    const parts = items.map(it => it.kind === 'image'
+      ? { frames: 1, reps: Math.max(1, Math.round(showTime(it) * 1000 / ms)) }
+      : { frames: Math.max(1, Math.round(it.len * st.fps)), reps: it.loops });
+    return { ms, parts, entries: parts.reduce((a, p) => a + p.frames * p.reps, 0), unique: parts.reduce((a, p) => a + p.frames, 0) };
+  }
+  async function buildPlan(onProgress) {
+    commitItem();
+    const P = planInfo(), jpegs = [], seq = [];
+    let done = 0;
+    for (let k = 0; k < st.items.length; k++) {
+      const it = st.items[k], p = P.parts[k], first = jpegs.length;
+      for (let i = 0; i < p.frames; i++) {
         if (st.cancel) throw new Error('Cancelled');
-        await seek(v, Math.min(v.duration - 0.001, sampleTime(i)));
-        out.push(encodeSource(v)); onProgress(i + 1, n);
-      }
-      v.play().catch(() => {});
-    } else {
-      for (let i = 0; i < n; i++) {
-        if (st.cancel) throw new Error('Cancelled');
-        out.push(encodeSource(animFrameAt(sampleTime(i)))); onProgress(i + 1, n);
+        let src;
+        if (it.kind === 'image') src = it.bmp;
+        else if (it.kind === 'anim') src = animFrameAt(sampleTime(it, i), it.anim);
+        else { it.video.pause(); await seek(it.video, Math.min(it.video.duration - 0.001, sampleTime(it, i))); src = it.video; }
+        jpegs.push(withItem(it, () => encodeSource(src)));
+        onProgress(++done, P.unique);
         if (i % 8 === 0) await sleep(0);
       }
+      const idx = Array.from({ length: p.frames }, (_, i) => first + i);
+      for (let r = 0; r < p.reps; r++) seq.push(...idx);
     }
-    return out;
+    const c = cur();
+    if (c && c.video) { c.video.currentTime = c.start; c.video.play().catch(() => {}); }
+    return { jpegs, seq, ms: P.ms };
   }
 
   // ======================= estimate =======================
-  // The size estimate is the average of several frames spread over the chosen part
-  // (a single frame can be far bigger or smaller than the average). It is only
-  // recalculated when a setting changes – a storage update from the badge just
-  // re-checks whether the cached result still fits.
+  // Every item is measured once (images: encoded, videos: the average of a few frames)
+  // and only measured again when its own settings change. The total is then calculated
+  // from the current settings – a storage update from the badge just re-checks it.
   let estTimer = null, estToken = 0;
-  const EST = { key: null, avg: null, busy: false };
-  const estKey = () => [srcId, st.kind, $('start').value, $('len').value, st.fps, quality(),
-    st.size, st.rot, Math.round(st.panX), Math.round(st.panY)].join('|');
+  const cropKey = c => [c.size, c.rot, Math.round(c.panX), Math.round(c.panY)].join(',');
+  const itemEstKey = it => quality() + '|' + cropKey(it.crop) + (isMotion(it) ? '|' + it.start + '|' + it.len : '');
+  function estReady() { commitItem(); return st.items.length > 0 && st.items.every(it => it.est && it.est.k === itemEstKey(it)); }
 
   function updateEstimate() {
     clearTimeout(estTimer);
     estTimer = setTimeout(async () => {
       if (!st.kind || st.sending) return;
-      const key = estKey();
-      if (key === EST.key && EST.avg != null) { renderEstimate(); return; }
-      const token = ++estToken; EST.busy = true; renderEstimate();
-      let avg = null;
-      try { avg = await averageFrameBytes(token); } catch (e) { avg = null; }
-      if (token !== estToken) return;                 // a newer change is already being calculated
-      EST.busy = false;
-      if (avg != null) { EST.key = key; EST.avg = avg; }
+      const it = cur(); if (it) { commitItem(); drawThumb(it); }
+      const token = ++estToken;
       renderEstimate();
+      try { await estimateItems(token); } catch (e) { /* replaced by a newer calculation */ }
+      if (token === estToken) renderEstimate();
     }, 250);
   }
-
+  async function estimateItems(token) {
+    for (const it of [...st.items]) {
+      if (token !== estToken) throw new Error('stale');
+      const k = itemEstKey(it);
+      if (it.est && it.est.k === k) continue;
+      const bytes = it.kind === 'image' ? withItem(it, () => encodeSource(it.bmp)).length : await averageFrameBytes(it, token);
+      if (!it.dead) it.est = { k, bytes };
+      await sleep(0);                                 // keep the page responsive
+    }
+  }
   // probe video: a hidden copy of the source, so sampling never disturbs the preview
   let probe = null;
   function probeSeek(t) {
@@ -969,47 +1369,43 @@ if (typeof module !== 'undefined') module.exports = BadgeCore;
       probe.addEventListener('seeked', h); probe.currentTime = t;
     });
   }
-  async function averageFrameBytes(token) {
-    if (st.kind === 'image') return encodeSource(st.img).length;
-    const n = Math.min(6, frameCount()), s = +$('start').value, l = +$('len').value;
-    const times = Array.from({ length: n }, (_, i) => s + (l * (i + 0.5)) / n);
+  async function averageFrameBytes(it, token) {
+    const n = Math.min(6, Math.max(1, Math.round(it.len * st.fps)));
     let total = 0;
-    for (const t of times) {
+    for (let i = 0; i < n; i++) {
       if (token !== estToken) throw new Error('stale');
+      const t = it.start + (it.len * (i + 0.5)) / n;
       let src;
-      if (st.kind === 'anim') src = animFrameAt(t);
+      if (it.kind === 'anim') src = animFrameAt(t, it.anim);
       else {
-        if (!probe || probe.dataset.src !== st.video.src) {
+        if (!probe || probe.dataset.src !== it.video.src) {
           probe = document.createElement('video'); probe.muted = true; probe.preload = 'auto';
-          probe.dataset.src = st.video.src; probe.src = st.video.src;
+          probe.dataset.src = it.video.src; probe.src = it.video.src;
           await new Promise((res, rej) => { probe.onloadeddata = res; probe.onerror = rej; });
         }
         await probeSeek(Math.min(probe.duration - 0.001, t)); src = probe;
       }
-      total += encodeSource(src).length;
-      await sleep(0);                                 // keep the page responsive
+      total += withItem(it, () => encodeSource(src)).length;
+      await sleep(0);
     }
     return total / n;
   }
 
   function renderEstimate() {
     if (!st.kind) return;
-    if (EST.avg == null || EST.key !== estKey()) {     // nothing valid yet
-      $('estA').textContent = 'Calculating size …'; $('estB').textContent = '';
-      return;
-    }
-    const one = EST.avg, frames = st.kind === 'image' ? 1 : frameCount();
-    const bytes = frames * (one + 48) + 800, kb = bytes / 1024;
+    if (!estReady()) { $('estA').textContent = 'Calculating size …'; $('estB').textContent = ''; st.nofit = null; renderSend(); return; }
+    const single = st.items.length === 1, it = cur(), P = planInfo();
+    const bytes = st.items.reduce((a, x, k) => a + x.est.bytes * P.parts[k].frames, 0) + P.entries * 48 + 800, kb = bytes / 1024;
     const secs = Math.ceil(bytes / 496) * st.pace / 1000;
     const size = kb < 1024 ? Math.round(kb) + ' KB' : (kb / 1024).toFixed(1) + ' MB';
-    $('estA').textContent = `≈ ${size}` + (frames > 1 ? ` · ${frames} frames` : '');
+    $('estA').textContent = `≈ ${size}` + (!single ? ` · ${st.items.length} items` : P.unique > 1 ? ` · ${P.unique} frames` : '');
     $('estB').textContent = `≈ ${secs < 60 ? Math.max(1, Math.ceil(secs)) + ' s' : (secs / 60).toFixed(1) + ' min'}`;
-    // 3 % safety margin, because this is an average
+    // 3 % safety margin, because video sizes are an average
     const tooBig = st.free != null && kb * 1.03 > st.free;
     $('estimate').classList.toggle('warn', tooBig);
     st.nofit = null;
     if (tooBig) {
-      const maxSec = frames > 1 ? Math.floor((st.free * 1024 / 1.03 - 800) / (one + 48) / st.fps * 10) / 10 : 0;
+      const maxSec = single && isMotion(it) ? Math.floor((st.free * 1024 / 1.03 - 800) / (it.est.bytes + 48) / st.fps * 10) / 10 : 0;
       st.nofit = { maxSec, freeMB: (st.free / 1024).toFixed(1) };
     }
     renderSend();
@@ -1030,9 +1426,9 @@ if (typeof module !== 'undefined') module.exports = BadgeCore;
     if (st.alert) return st.alert;
     if (st.nofit) {
       const { maxSec, freeMB } = st.nofit;
-      return maxSec >= 0.5
-        ? { type: 'nofit', text: `Too large – shorten to ${maxSec.toFixed(1)} s`, detail: `Only ${freeMB} MB free on the badge. Click to shorten automatically, or choose fewer frames/sec or lower quality.` }
-        : { type: 'nofit', text: 'Too large for the badge', detail: `Only ${freeMB} MB free on the badge. Lower the quality or free up space on the badge.`, noAction: true };
+      if (maxSec >= 0.5) return { type: 'nofit', text: `Too large – shorten to ${maxSec.toFixed(1)} s`, detail: `Only ${freeMB} MB free on the badge. Click to shorten automatically, or choose fewer frames/sec or lower quality.` };
+      const how = isGallery() ? 'Remove items, shorten videos, choose fewer frames/sec or lower the quality' : 'Lower the quality';
+      return { type: 'nofit', text: 'Too large for the badge', detail: `Only ${freeMB} MB free on the badge. ${how} – or free up space on the badge.`, noAction: true };
     }
     return null;
   }
@@ -1055,22 +1451,24 @@ if (typeof module !== 'undefined') module.exports = BadgeCore;
     if (st.sending) { st.cancel = true; return; }                       // second click = cancel
     const a = currentAlert();
     if (a && a.type === 'nofit') {                                       // shorten to what fits
-      $('len').value = Math.max(0.1, a.text ? st.nofit.maxSec : +$('len').value); syncTime(); updateEstimate(); return;
+      if (!a.noAction) { $('len').value = Math.max(0.1, st.nofit.maxSec); timeChanged(); }
+      return;
     }
     if (a && a.type === 'lost') { await connect(); return; }
     if (a && a.type === 'error') st.alert = null;                        // retry
     if (!st.chWrite && !(await connect())) return;
     st.sending = true; st.cancel = false; showMsg('');
+    const singleImage = st.items.length === 1 && st.kind === 'image';
     try {
       let msgs;
-      if (st.kind === 'image') { sendState(0, 'Preparing …'); msgs = BadgeCore.imageMessages(encodeSource(st.img)); }
+      if (singleImage) { sendState(0, 'Preparing …'); const it = cur(); msgs = BadgeCore.imageMessages(withItem(it, () => encodeSource(it.bmp))); }
       else {
-        const frames = await buildFrames((i, n) => sendState(i / n * 0.15, `Preparing ${Math.round(i / n * 100)} % · click to cancel`));
-        msgs = BadgeCore.videoMessages(frames, Math.round(1000 / st.fps));
+        const pl = await buildPlan((i, n) => sendState(i / n * 0.15, `Preparing ${Math.round(i / n * 100)} % · click to cancel`));
+        msgs = BadgeCore.framesMessages(pl.jpegs, pl.seq, pl.ms);
       }
-      const kb = msgs[1].reduce((a, p) => a + p.length, 0) / 1024;
-      if (st.free != null && kb > st.free) throw new Error(`Too large: ${Math.round(kb)} KB, only ${st.free} KB free. Choose a shorter length, fewer frames/sec or lower quality.`);
-      const base = st.kind === 'image' ? 0 : 0.15;
+      const kb = msgs[1].reduce((s, p) => s + p.length, 0) / 1024;
+      if (st.free != null && kb > st.free) throw new Error(`Too large: ${Math.round(kb)} KB, only ${st.free} KB free. ${isGallery() ? 'Remove items, shorten videos or lower the quality.' : 'Choose a shorter length, fewer frames/sec or lower quality.'}`);
+      const base = singleImage ? 0 : 0.15;
       const ok = await sendMessages(msgs, (i, n, ms) => {
         const left = Math.ceil(ms / i * (n - i) / 1000);
         sendState(base + (1 - base) * i / n, `Sending ${Math.round(i / n * 100)} % · ${left} s · click to cancel`);
@@ -1083,27 +1481,103 @@ if (typeof module !== 'undefined') module.exports = BadgeCore;
       if (e.message === 'Cancelled') showMsg('Cancelled.');
       else if (!st.chWrite) setAlert('lost', 'The connection was lost during the upload (' + e.message + '). Click to reconnect, then send again – the "Safe" transfer speed can help.');
       else setAlert('error', e.message + ' – try again, if it keeps failing choose the "Safe" transfer speed.');
-    } finally { st.sending = false; st.cancel = false; renderEstimate(); }
+    } finally {
+      st.sending = false; st.cancel = false;
+      if (isGallery() && !st.editing) restartAt(st.sel);
+      renderEstimate();
+    }
   }
 
   // ======================= wiring =======================
   $('btnConnect').onclick = connect;
   $('btnDisconnect').onclick = () => { st.userDisc = true; if (st.alert && st.alert.type === 'lost') st.alert = null; if (st.dev && st.dev.gatt.connected) st.dev.gatt.disconnect(); renderSend(); };
   $('btnSend').onclick = send;
-  $('btnReset').onclick = resetCrop;
-  $('btnFull').onclick = () => { $('len').value = duration() - +$('start').value; syncTime(); updateEstimate(); };
+  $('btnReset').onclick = () => { pause(); resetCrop(); };
 
   const drop = $('drop'), picker = $('file');
-  picker.onchange = () => { if (picker.files[0]) loadFile(picker.files[0]); picker.value = ''; };
-  ['dragenter', 'dragover'].forEach(ev => document.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('hover'); }));
-  ['dragleave', 'drop'].forEach(ev => document.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('hover'); }));
-  document.addEventListener('drop', e => { const f = e.dataTransfer.files[0]; if (f) loadFile(f); });
+  picker.onchange = () => { loadFiles(picker.files); picker.value = ''; };
+  $('btnNew').onclick = startOver;
+  function startOver() {
+    if (st.sending) return;
+    resetSource(); showMsg('');
+    if (st.alert && st.alert.type !== 'lost') st.alert = null;
+    $('editor').classList.remove('show'); $('editor').hidden = true;
+    $('app').classList.add('empty'); drop.hidden = false;
+    renderSend();
+  }
+  $('fileAdd').onchange = () => { addFiles($('fileAdd').files); $('fileAdd').value = ''; };
+  // once something is loaded, every drop adds to it (Start over begins anew)
+  const hasFiles = e => e.dataTransfer && [...e.dataTransfer.types].includes('Files');
+  ['dragenter', 'dragover'].forEach(ev => document.addEventListener(ev, e => {
+    e.preventDefault();
+    if (!hasFiles(e)) return;
+    if (st.kind) $('dropOv').hidden = false; else drop.classList.add('hover');
+  }));
+  document.addEventListener('dragleave', e => { if (!e.relatedTarget) { $('dropOv').hidden = true; drop.classList.remove('hover'); } });
+  document.addEventListener('drop', e => { e.preventDefault(); $('dropOv').hidden = true; drop.classList.remove('hover'); });
+  document.addEventListener('drop', e => {
+    const files = e.dataTransfer.files; if (!files.length) return;
+    if (st.kind) addFiles(files); else loadFiles(files);
+  });
 
-  $('size').addEventListener('input', e => { touch(); setSize(Math.pow(2, +e.target.value)); });
-  $('rot').addEventListener('input', e => { touch(); setRot(+e.target.value); });
-  ['start', 'len'].forEach(id => $(id).addEventListener('input', () => { syncTime(); updateEstimate(); }));
+  // ---- gallery strip ----
+  const strip = $('strip');
+  strip.addEventListener('click', e => {
+    if (performance.now() - lastDragEnd < 300) return;         // the click that ends a drag
+    const x = e.target.closest('[data-remove]'); if (x) { removeItem(+x.dataset.remove); return; }
+    if (e.target.closest('[data-add]')) { $('fileAdd').click(); return; }
+    const t = e.target.closest('.thumb'); if (t) selectItem(+t.dataset.i);
+  });
+  strip.addEventListener('keydown', e => {
+    const t = e.target.closest('.thumb'); if (!t) return;
+    const i = +t.dataset.i;
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectItem(i); }
+    else if (e.key === 'Delete' || e.key === 'Backspace') { e.preventDefault(); removeItem(i); }
+    else if (e.altKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+      e.preventDefault(); const to = clamp(i + (e.key === 'ArrowLeft' ? -1 : 1), 0, st.items.length - 1);
+      moveItem(i, to); strip.querySelectorAll('.thumb')[to].focus();
+    }
+  });
+  strip.addEventListener('pointerdown', e => {
+    const t = e.target.closest('.thumb');
+    if (!t || e.target.closest('[data-remove]') || e.button > 0 || st.items.length < 2) return;
+    drag = { id: st.items[+t.dataset.i].id, x: e.clientX, y: e.clientY, active: false, type: e.pointerType, timer: null };
+    if (e.pointerType !== 'mouse') drag.timer = setTimeout(() => { if (drag && !drag.active) startDrag(); }, 300);
+  });
+  window.addEventListener('pointermove', e => {
+    if (!drag) return;
+    if (!drag.active) {
+      const d = Math.hypot(e.clientX - drag.x, e.clientY - drag.y);
+      if (drag.type === 'mouse') { if (d > 5) startDrag(); else return; }
+      else { if (d > 8) endDrag(); return; }                     // finger moved before the hold: it is a scroll
+    }
+    const el = document.elementFromPoint(e.clientX, e.clientY), t = el && el.closest && el.closest('.thumb');
+    if (!t) return;
+    const to = +t.dataset.i, from = st.items.findIndex(x => x.id === drag.id);
+    if (from >= 0 && to !== from) moveItem(from, to);
+  });
+  window.addEventListener('pointerup', endDrag); window.addEventListener('pointercancel', endDrag);
+  strip.addEventListener('touchmove', e => { if (drag && drag.active) e.preventDefault(); }, { passive: false });
+  strip.addEventListener('contextmenu', e => { if (e.target.closest('.thumb')) e.preventDefault(); });
+
+  // while adjusting an item the gallery waits; a click anywhere else plays on
+  // (on the finished click, not on press: the item settings close, and the layout must not
+  // move away under the pointer before the click lands – e.g. on the send button)
+  document.addEventListener('click', e => {
+    if (!st.editing || !e.target.closest) return;
+    if (e.target.closest('#strip, #preview, .crop, .resetrow, #itemOpts')) return;
+    play();
+  }, true);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && st.editing && !(e.target.closest && e.target.closest('input'))) play(); });
+
+  $('size').addEventListener('input', e => { touch(); pause(); setSize(Math.pow(2, +e.target.value)); });
+  $('rot').addEventListener('input', e => { touch(); pause(); setRot(+e.target.value); });
+  ['start', 'len'].forEach(id => $(id).addEventListener('input', timeChanged));
   $('quality').addEventListener('input', () => { touch(); $('qualNum').value = $('quality').value; fill('quality'); updateEstimate(); });
-  $('fpsBtns').addEventListener('click', e => { const b = e.target.closest('[data-i]'); if (!b) return; st.fps = presets[+b.dataset.i]; syncFps(); updateEstimate(); });
+  $('fpsBtns').addEventListener('click', e => { const b = e.target.closest('[data-i]'); if (!b) return; st.fps = presets[+b.dataset.i]; st.fpsSet = true; syncFps(); renderEstimate(); updateEstimate(); });
+  $('ipiBtns').addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (b) setIpi(+b.dataset.v); });
+  $('itBtns').addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (b) setItemTime(b.dataset.v === 'd' ? null : +b.dataset.v); });
+  $('loopsBtns').addEventListener('click', e => { const b = e.target.closest('[data-v]'); if (b) setLoops(+b.dataset.v); });
   $('paceBtns').addEventListener('click', e => {
     const b = e.target.closest('[data-v]'); if (!b) return;
     st.pace = +b.dataset.v; [...$('paceBtns').children].forEach(x => x.setAttribute('aria-checked', x === b ? 'true' : 'false')); renderEstimate();
@@ -1121,15 +1595,21 @@ if (typeof module !== 'undefined') module.exports = BadgeCore;
   }
   function refreshNums() {
     $('sizeNum').value = Math.round(st.size * 100); $('rotNum').value = Math.round(st.rot * 10) / 10;
-    $('qualNum').value = $('quality').value; if (st.kind && st.kind !== 'image') { syncTime(); syncFps(); }
+    $('qualNum').value = $('quality').value;
+    if (st.kind) renderItemOpts();
+    if (st.kind && st.kind !== 'image') syncTime();
+    if (st.items.some(isMotion)) syncFps();
   }
-  onNum('sizeNum', v => setSize(v / 100));
-  onNum('rotNum', v => setRot(v));
-  onNum('startNum', v => { $('start').value = clamp(v, 0, +$('start').max); syncTime(); updateEstimate(); });
-  onNum('lenNum', v => { $('len').value = clamp(v, 0.1, duration() - +$('start').value); syncTime(); updateEstimate(); });
+  onNum('sizeNum', v => { pause(); setSize(v / 100); });
+  onNum('rotNum', v => { pause(); setRot(v); });
+  onNum('startNum', v => { $('start').value = clamp(v, 0, +$('start').max); timeChanged(); });
+  onNum('lenNum', v => { $('len').value = clamp(v, 0.1, duration() - +$('start').value); timeChanged(); });
   onNum('qualNum', v => { $('quality').value = clamp(Math.round(v), 1, 100); fill('quality'); updateEstimate(); });
   // own frame rate: allowed, but never above the source (max. 20)
-  onNum('fpsNum', v => { st.fps = clamp(v, 1, maxFps()); syncFps(); updateEstimate(); });
+  onNum('fpsNum', v => { st.fps = clamp(v, 1, maxFps()); st.fpsSet = true; syncFps(); renderEstimate(); updateEstimate(); });
+  onNum('ipiNum', v => setIpi(v));
+  onNum('itNum', v => setItemTime(v));
+  onNum('loopsNum', v => setLoops(v));
 
   // phone: the small status line above the preview only appears once the orange bar has scrolled away
   let barVisible = true;
