@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>badge/uploader</title>
+<meta name="description" content="Send images, GIFs and videos to round Bluetooth e-badges – no app, no account, no cloud.">
+<meta name="theme-color" content="#101113">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/favicon-64.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>
+  :root {
+    --bg:#101113; --panel:#1A1B1F; --field:#26282E; --line:#2C2E34; --drop:#15161A;
+    --text:#EEEEF0; --dim:#A6A8B0; --dim2:#8D909A; --label:#C9CBD2;
+    --acc:#FF8A3D; --acc-ink:#1A1206; --acc-soft:#241A12; --acc-text:#FFB27A;
+    --send:#3BA7F5; --send-ink:#05182A; --err:#FF7A7A;
+    --box:380px; --circle:320px; --btn:44px;
+  }
+  * { box-sizing:border-box; }
+  [hidden] { display:none !important; }
+  html, body { margin:0; background:var(--bg); color:var(--text); font:14px/1.45 Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  button { font:inherit; color:inherit; border:0; cursor:pointer; }
+  button:disabled { cursor:default; opacity:.45; }
+  :focus-visible { outline:2px solid var(--acc-text); outline-offset:2px; }
+
+  .app { min-height:100vh; display:flex; flex-direction:column; }
+  .top { padding:18px 28px 6px; display:flex; align-items:center; justify-content:center; }
+  .logo { font-family:"Space Grotesk", Inter, sans-serif; font-weight:700; font-size:20px; letter-spacing:.2px; }
+  .logo span { color:var(--acc); }
+  .col { width:100%; max-width:1000px; margin:0 auto; padding:0 28px; }
+  .stack { display:flex; flex-direction:column; gap:14px; padding-top:8px; }
+  .app.empty .stack { flex:1; justify-content:center; padding-bottom:40px; }
+
+  /* connect + device bar */
+  .connect { width:100%; height:64px; border-radius:18px; background:#EEEEF0; color:#15161A; font-size:17px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:12px; }
+  .connect:hover { background:#FFFFFF; }
+  .devbar { width:100%; display:flex; align-items:center; gap:14px; padding:10px 12px 10px 18px; background:var(--acc); color:var(--acc-ink); border-radius:18px; flex-wrap:wrap; }
+  .devbar .name { display:flex; align-items:center; gap:10px; font-weight:700; font-size:16px; }
+  .devbar .store { margin-left:auto; font-size:13px; font-weight:600; white-space:nowrap; color:rgba(26,18,6,.62); }
+  .devbar button { font-size:13px; font-weight:700; color:var(--acc-ink); background:rgba(26,18,6,.14); border-radius:10px; padding:0 12px; height:36px; }
+  .devbar button:hover { background:rgba(26,18,6,.22); }
+
+  /* drop zone */
+  .drop { position:relative; display:flex; border:3px dashed #4A4D56; border-radius:32px; background:var(--drop); cursor:pointer;
+          height:460px; transition:height .35s ease, border-radius .35s ease, border-width .35s ease; overflow:hidden; }
+  .drop.hover { border-color:var(--acc); background:#1B1611; }
+  .drop .big { margin:auto; display:flex; flex-direction:column; align-items:center; gap:18px; text-align:center; padding:24px; transition:opacity .2s; }
+  .drop .big .icon { width:96px; height:96px; border-radius:50%; background:var(--acc-soft); display:grid; place-items:center; }
+  .drop .big .t1 { font-family:"Space Grotesk", Inter, sans-serif; font-size:28px; font-weight:600; }
+  .drop .big .t2 { color:var(--dim); font-size:15px; }
+  .drop .big .t2 u { color:var(--acc-text); font-weight:600; }
+  .drop .big .t3 { color:var(--dim2); font-size:13px; letter-spacing:.3px; }
+  .drop .file { display:none; align-items:center; gap:12px; padding:0 18px; width:100%; flex-wrap:wrap; }
+  .drop .file .fname { font-weight:600; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0; max-width:50%; }
+  .drop .file .chip { padding:3px 9px; background:#23252B; border-radius:999px; font-size:12px; color:var(--label); white-space:nowrap; }
+  .drop .file .repl { margin-left:auto; font-size:13px; color:var(--dim); }
+  .drop .file .repl u { color:var(--acc-text); font-weight:600; }
+  .drop.compact { height:64px; border-width:2px; border-color:#3A3D45; border-radius:16px; }
+  .drop.compact .big { display:none; }
+  .drop.compact .file { display:flex; }
+
+  /* editor */
+  .editor { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); align-items:start; gap:32px; padding-top:24px; padding-bottom:28px;
+            opacity:0; transform:translateY(-18px); transition:opacity .35s ease .1s, transform .35s ease .1s; }
+  .editor.show { opacity:1; transform:none; }
+  .stage { min-width:0; display:flex; flex-direction:column; align-items:stretch; gap:20px; }
+  .stickywrap { display:flex; justify-content:center; width:100%; }
+  .pvholder { width:100%; }
+  .pvbox { width:100%; aspect-ratio:1 / 1; border-radius:15%; overflow:hidden; background:#0B0B0D; transform-origin:top center; }
+  #preview { width:100%; height:100%; display:block; touch-action:none; cursor:grab; }
+  #preview:active { cursor:grabbing; }
+  .mstat { display:none; }
+  .crop { width:100%; display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:24px; }
+  .resetrow { display:flex; align-items:center; gap:16px; flex-wrap:wrap; justify-content:center; }
+  .hint { font-size:12px; color:var(--dim2); }
+
+  .panel { min-width:0; align-self:start; background:var(--panel); border-radius:18px; padding:20px; display:flex; flex-direction:column; gap:18px; }
+  .group { display:flex; flex-direction:column; gap:18px; }
+  .divider { height:1px; background:var(--line); }
+
+  /* fields + sliders */
+  .field { display:flex; flex-direction:column; gap:6px; min-width:0; }
+  .fhead { display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+  .fhead label, .fhead .lbl { color:var(--label); }
+  .val { display:inline-flex; align-items:baseline; gap:2px; white-space:nowrap; font-variant-numeric:tabular-nums; color:var(--text); }
+  .val input { width:52px; font:inherit; font-weight:600; color:var(--text); background:transparent; border:1px solid transparent; border-radius:6px; text-align:right; padding:1px 3px; -moz-appearance:textfield; }
+  .val input::-webkit-inner-spin-button, .val input::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
+  .val input:hover { border-color:#34363D; cursor:text; }
+  .val input:focus { outline:none; border-color:var(--acc); background:var(--field); }
+  .sl { position:relative; height:34px; }
+  .sl .trk { position:absolute; left:0; right:0; top:11px; height:12px; background:var(--line); border-radius:6px; }
+  .sl .fill { position:absolute; top:11px; height:12px; background:var(--acc); border-radius:6px; left:0; width:0; }
+  .sl .mid { position:absolute; left:50%; top:5px; width:3px; height:24px; background:#5A5D66; border-radius:1px; transform:translateX(-50%); }
+  .sl input { position:absolute; left:0; top:0; width:100%; height:34px; margin:0; -webkit-appearance:none; appearance:none; background:transparent; cursor:pointer; }
+  .sl input::-webkit-slider-runnable-track { height:34px; background:transparent; }
+  .sl input::-webkit-slider-thumb { -webkit-appearance:none; width:30px; height:30px; margin-top:2px; border-radius:50%; background:var(--acc); border:4px solid var(--panel); box-shadow:0 0 0 1px var(--acc); }
+  .stage .sl input::-webkit-slider-thumb { border-color:var(--bg); }
+  .sl input::-moz-range-track { background:transparent; }
+  .sl input::-moz-range-thumb { width:22px; height:22px; border-radius:50%; background:var(--acc); border:4px solid var(--panel); }
+
+  .btn { height:var(--btn); border-radius:10px; background:#23252B; padding:0 16px; font-weight:600; font-size:13px; }
+  .btn:hover:not(:disabled) { background:#2C2F36; }
+  .btn.soft { background:var(--acc-soft); color:var(--acc-text); align-self:center; }
+  .btn.soft:hover { background:#2E2116; }
+  .seg { display:grid; gap:6px; }
+  .seg button { height:var(--btn); border-radius:10px; background:var(--field); font-size:14px; }
+  .seg button:hover { background:#2F3138; }
+  .seg button[aria-checked="true"] { background:var(--acc); color:var(--acc-ink); font-weight:700; }
+
+  .estimate { display:flex; justify-content:space-between; gap:12px; font-size:13px; color:var(--dim); }
+  .estimate.warn { color:var(--err); }
+  .send { position:relative; height:52px; border-radius:12px; background:var(--send); color:var(--send-ink); font-size:15px; font-weight:700; display:flex; align-items:center; justify-content:center; gap:10px; overflow:hidden; }
+  .send:hover:not(:disabled) { filter:brightness(1.08); }
+  .send .pbar { position:absolute; left:0; top:0; bottom:0; width:0; background:rgba(5,24,42,.22); transition:width .2s; }
+  .send span, .send svg { position:relative; }
+  .send.alert { background:#D93A3A; color:#FFFFFF; }
+  .send.alert:disabled { opacity:1; }
+  .msg { font-size:13px; color:var(--dim); white-space:pre-line; min-height:0; }
+  .msg.err { color:var(--err); }
+  .compat { margin:4px 0 0; text-align:center; font-size:12px; color:var(--dim2); }
+  .compat b { color:var(--dim); font-weight:600; }
+  .app:not(.empty) .compat { display:none; }
+  .topmsg { font-size:13px; color:var(--err); text-align:center; }
+
+  /* ---------- phone ---------- */
+  @media (max-width: 700px) {
+    :root { --box:300px; --circle:252px; }
+    .top { padding:14px 16px 6px; }
+    .logo { font-size:18px; }
+    .col { padding:0 16px; }
+    .connect { height:52px; font-size:16px; border-radius:14px; }
+    .devbar { padding:6px 6px 6px 14px; gap:10px; border-radius:14px; }
+    .devbar .name { font-size:15px; }
+    .devbar .store .used { display:none; }
+    .devbar button { height:32px; }
+    .drop { height:300px; border-radius:24px; }
+    .drop .big .t1 { font-size:22px; }
+    .drop.compact { height:52px; border-radius:14px; }
+    .drop .file { padding:0 12px; gap:8px; }
+    .drop .file .repl .long { display:none; }
+    .editor { display:flex; flex-direction:column; flex-wrap:nowrap; gap:14px; padding-top:12px; padding-bottom:120px; }
+    .stage { display:contents; }   /* lets the preview stay sticky over the whole editor */
+    .stickywrap { position:sticky; top:0; z-index:5; background:var(--bg); padding:8px 0 12px; flex-direction:column; align-items:center; gap:8px;
+                  box-shadow:0 10px 22px rgba(0,0,0,.5); margin:0 -16px; width:calc(100% + 32px); }
+    .pvholder { overflow:visible; display:flex; justify-content:center; }
+    .pvbox { width:var(--box); height:var(--box); flex:none; }
+    .mstat { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--dim); }
+    .mstat i { width:7px; height:7px; border-radius:50%; background:var(--acc); display:inline-block; }
+    .crop { max-width:none; gap:16px; }
+    .resetrow { width:100%; }
+    .resetrow .btn { width:100%; }
+    .hint { display:none; }
+    .panel { flex:none; align-self:stretch; min-width:0; background:none; padding:4px 0 0; gap:16px; }
+    .sl input::-webkit-slider-thumb { border-color:var(--bg); }
+    .sendbar { position:fixed; left:0; right:0; bottom:0; z-index:10; background:#15161A; border-top:1px solid #23252B; padding:12px 16px calc(14px + env(safe-area-inset-bottom)); }
+  }
+</style>
+</head>
+<body>
+<div class="app empty" id="app">
+  <header class="top"><span class="logo">badge<span>/</span>uploader</span></header>
+
+  <div class="col stack">
+    <button id="btnConnect" class="connect"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7l10 10-5 5V2l5 5L7 17"></path></svg>Connect device</button>
+    <div id="devBar" class="devbar" role="status" hidden>
+      <span class="name"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7l10 10-5 5V2l5 5L7 17"></path></svg><span id="devName">Badge</span></span>
+      <span class="store" id="devStore"></span>
+      <button id="btnDisconnect">Disconnect</button>
+    </div>
+    <div id="topMsg" class="topmsg" hidden></div>
+    <label id="drop" class="drop">
+      <input type="file" id="file" accept="image/*,video/*" hidden>
+      <span class="big">
+        <span class="icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#FF8A3D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4"></path><path d="M7 9l5-5 5 5"></path><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"></path></svg></span>
+        <span class="t1">Drop an image, GIF or video</span>
+        <span class="t2">or <u>choose a file</u></span>
+        <span class="t3">JPG · PNG · WebP · GIF · MP4 · MOV</span>
+      </span>
+      <span class="file">
+        <span class="fname" id="fName"></span>
+        <span id="fChips" style="display:flex; gap:8px; flex-wrap:wrap"></span>
+        <span class="repl"><span class="long">Drop another file or </span><u>replace</u></span>
+      </span>
+    </label>
+    <p class="compat" id="compat">Works with Bluetooth badges that use the <b>NN family</b> or <b>beamBox</b> app.</p>
+  </div>
+
+  <main id="editor" class="col editor" hidden>
+    <section class="stage" aria-label="Preview and crop">
+      <div class="stickywrap" id="stickyWrap">
+        <div class="mstat" id="mStat" hidden><i></i><span id="mStatText"></span></div>
+        <div class="pvholder" id="pvHolder"><div class="pvbox" id="pvBox"><canvas id="preview" aria-label="Preview. The circle is what the badge shows. Drag to move, scroll or pinch to resize, double-click to reset."></canvas></div></div>
+      </div>
+      <div class="crop">
+        <div class="field">
+          <div class="fhead"><label for="size">Size</label><span class="val"><input id="sizeNum" type="number" aria-label="Size in percent">%</span></div>
+          <div class="sl"><span class="trk"></span><span class="fill" id="sizeFill"></span><span class="mid"></span><input id="size" type="range" min="-1" max="1" step="0.001" value="0" data-center="1"></div>
+        </div>
+        <div class="field">
+          <div class="fhead"><label for="rot">Rotate</label><span class="val"><input id="rotNum" type="number" aria-label="Rotation in degrees">°</span></div>
+          <div class="sl"><span class="trk"></span><span class="fill" id="rotFill"></span><span class="mid"></span><input id="rot" type="range" min="-180" max="180" step="0.5" value="0" data-center="1"></div>
+        </div>
+      </div>
+      <div class="resetrow"><button id="btnReset" class="btn">Reset</button><span class="hint">Drag = move · Scroll = size · Double-click = reset</span></div>
+    </section>
+
+    <aside class="panel" aria-label="Settings">
+      <div class="group" id="timeOpts">
+        <div class="field">
+          <div class="fhead"><label for="start">Start</label><span class="val"><input id="startNum" type="number" step="0.1" aria-label="Start in seconds">s</span></div>
+          <div class="sl"><span class="trk"></span><span class="fill" id="startFill"></span><input id="start" type="range" min="0" max="1" step="0.01" value="0"></div>
+        </div>
+        <div class="field">
+          <div class="fhead"><label for="len">Length</label><span class="val"><input id="lenNum" type="number" step="0.1" aria-label="Length in seconds">s</span></div>
+          <div class="sl"><span class="trk"></span><span class="fill" id="lenFill"></span><input id="len" type="range" min="0.1" max="1" step="0.01" value="1"></div>
+        </div>
+        <button id="btnFull" class="btn soft">Use full length</button>
+        <div class="divider"></div>
+        <div class="field">
+          <div class="fhead"><span class="lbl">Frames/sec</span><span class="val"><input id="fpsNum" type="number" step="1" aria-label="Frames per second">fps</span></div>
+          <div class="seg" id="fpsBtns" role="radiogroup" aria-label="Frames per second presets" style="grid-template-columns:repeat(4, minmax(0, 1fr))"></div>
+        </div>
+      </div>
+      <div class="field">
+        <div class="fhead"><label for="quality">Quality</label><span class="val"><input id="qualNum" type="number" aria-label="Quality"></span></div>
+        <div class="sl"><span class="trk"></span><span class="fill" id="qualityFill"></span><input id="quality" type="range" min="1" max="100" step="1" value="75"></div>
+      </div>
+      <div class="field">
+        <span class="lbl" style="color:var(--label)">Transfer speed</span>
+        <div class="seg" id="paceBtns" role="radiogroup" aria-label="Transfer speed" style="grid-template-columns:repeat(3, minmax(0, 1fr))">
+          <button role="radio" aria-checked="false" data-v="16">Fast</button>
+          <button role="radio" aria-checked="true" data-v="25">Normal</button>
+          <button role="radio" aria-checked="false" data-v="40">Safe</button>
+        </div>
+      </div>
+      <div class="divider"></div>
+      <div class="sendbar">
+        <div class="estimate" id="estimate"><span id="estA"></span><span id="estB"></span></div>
+        <button id="btnSend" class="send" style="width:100%; margin-top:10px"><span class="pbar" id="pbar"></span><span id="sendIcon" style="display:flex"></span><span id="sendText">Send to badge</span></button>
+        <div class="msg" id="msg"></div>
+      </div>
+    </aside>
+  </main>
+</div>
+<script>
+// ===== Badge core: JPEG encoder (baseline, 4:4:4) + BLE protocol framing =====
+// Pure functions, no browser APIs, so they can be tested outside the browser.
+
+const BadgeCore = (() => {
+  // ---------- JPEG encoder (baseline, 4:4:4, standard Huffman tables) ----------
+  const ZIGZAG = [0,1,5,6,14,15,27,28,2,4,7,13,16,26,29,42,3,8,12,17,25,30,41,43,9,11,18,24,31,40,44,53,
+    10,19,23,32,39,45,52,54,20,22,33,38,46,51,55,60,21,34,37,47,50,56,59,61,35,36,48,49,57,58,62,63];
+  const STD_Y = [16,11,10,16,24,40,51,61,12,12,14,19,26,58,60,55,14,13,16,24,40,57,69,56,14,17,22,29,51,87,80,62,
+    18,22,37,56,68,109,103,77,24,35,55,64,81,104,113,92,49,64,78,87,103,121,120,101,72,92,95,98,112,100,103,99];
+  const STD_C = [17,18,24,47,99,99,99,99,18,21,26,66,99,99,99,99,24,26,56,99,99,99,99,99,47,66,99,99,99,99,99,99,
+    99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99,99];
+  const DC_L_BITS = [0,1,5,1,1,1,1,1,1,0,0,0,0,0,0,0], DC_L_VAL = [0,1,2,3,4,5,6,7,8,9,10,11];
+  const DC_C_BITS = [0,3,1,1,1,1,1,1,1,1,1,0,0,0,0,0], DC_C_VAL = [0,1,2,3,4,5,6,7,8,9,10,11];
+  const AC_L_BITS = [0,2,1,3,3,2,4,3,5,5,4,4,0,0,1,0x7d];
+  const AC_L_VAL = [0x01,0x02,0x03,0x00,0x04,0x11,0x05,0x12,0x21,0x31,0x41,0x06,0x13,0x51,0x61,0x07,0x22,0x71,0x14,0x32,0x81,0x91,0xa1,0x08,
+    0x23,0x42,0xb1,0xc1,0x15,0x52,0xd1,0xf0,0x24,0x33,0x62,0x72,0x82,0x09,0x0a,0x16,0x17,0x18,0x19,0x1a,0x25,0x26,0x27,0x28,0x29,0x2a,0x34,0x35,0x36,
+    0x37,0x38,0x39,0x3a,0x43,0x44,0x45,0x46,0x47,0x48,0x49,0x4a,0x53,0x54,0x55,0x56,0x57,0x58,0x59,0x5a,0x63,0x64,0x65,0x66,0x67,0x68,0x69,0x6a,
+    0x73,0x74,0x75,0x76,0x77,0x78,0x79,0x7a,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8a,0x92,0x93,0x94,0x95,0x96,0x97,0x98,0x99,0x9a,0xa2,0xa3,0xa4,
+    0xa5,0xa6,0xa7,0xa8,0xa9,0xaa,0xb2,0xb3,0xb4,0xb5,0xb6,0xb7,0xb8,0xb9,0xba,0xc2,0xc3,0xc4,0xc5,0xc6,0xc7,0xc8,0xc9,0xca,0xd2,0xd3,0xd4,0xd5,
+    0xd6,0xd7,0xd8,0xd9,0xda,0xe1,0xe2,0xe3,0xe4,0xe5,0xe6,0xe7,0xe8,0xe9,0xea,0xf1,0xf2,0xf3,0xf4,0xf5,0xf6,0xf7,0xf8,0xf9,0xfa];
+  const AC_C_BITS = [0,2,1,2,4,4,3,4,7,5,4,4,0,1,2,0x77];
+  const AC_C_VAL = [0x00,0x01,0x02,0x03,0x11,0x04,0x05,0x21,0x31,0x06,0x12,0x41,0x51,0x07,0x61,0x71,0x13,0x22,0x32,0x81,0x08,0x14,0x42,0x91,
+    0xa1,0xb1,0xc1,0x09,0x23,0x33,0x52,0xf0,0x15,0x62,0x72,0xd1,0x0a,0x16,0x24,0x34,0xe1,0x25,0xf1,0x17,0x18,0x19,0x1a,0x26,0x27,0x28,0x29,0x2a,
+    0x35,0x36,0x37,0x38,0x39,0x3a,0x43,0x44,0x45,0x46,0x47,0x48,0x49,0x4a,0x53,0x54,0x55,0x56,0x57,0x58,0x59,0x5a,0x63,0x64,0x65,0x66,0x67,0x68,
+    0x69,0x6a,0x73,0x74,0x75,0x76,0x77,0x78,0x79,0x7a,0x82,0x83,0x84,0x85,0x86,0x87,0x88,0x89,0x8a,0x92,0x93,0x94,0x95,0x96,0x97,0x98,0x99,0x9a,
+    0xa2,0xa3,0xa4,0xa5,0xa6,0xa7,0xa8,0xa9,0xaa,0xb2,0xb3,0xb4,0xb5,0xb6,0xb7,0xb8,0xb9,0xba,0xc2,0xc3,0xc4,0xc5,0xc6,0xc7,0xc8,0xc9,0xca,0xd2,
+    0xd3,0xd4,0xd5,0xd6,0xd7,0xd8,0xd9,0xda,0xe2,0xe3,0xe4,0xe5,0xe6,0xe7,0xe8,0xe9,0xea,0xf2,0xf3,0xf4,0xf5,0xf6,0xf7,0xf8,0xf9,0xfa];
+
+  // NAT[k] = natural (row-major) position of the k-th coefficient in zigzag order
+  const NAT = new Int32Array(64); for (let k = 0; k < 64; k++) NAT[k] = ZIGZAG.indexOf(k);
+
+  function buildHuff(bits, vals) {
+    const codes = {}; let code = 0, k = 0;
+    for (let len = 1; len <= 16; len++) {
+      for (let i = 0; i < bits[len - 1]; i++) codes[vals[k++]] = [code++, len];
+      code <<= 1;
+    }
+    return codes;
+  }
+  const H = {
+    dcY: buildHuff(DC_L_BITS, DC_L_VAL), acY: buildHuff(AC_L_BITS, AC_L_VAL),
+    dcC: buildHuff(DC_C_BITS, DC_C_VAL), acC: buildHuff(AC_C_BITS, AC_C_VAL),
+  };
+
+  function scaleTable(base, quality) {
+    quality = Math.min(100, Math.max(1, Math.round(quality)));
+    const s = quality < 50 ? 5000 / quality : 200 - quality * 2;
+    return base.map(v => Math.min(255, Math.max(1, Math.floor((v * s + 50) / 100))));
+  }
+
+  // AAN scaled DCT factors
+  const AAN = [1.0, 1.387039845, 1.306562965, 1.175875602, 1.0, 0.785694958, 0.541196100, 0.275899379];
+
+  function divisors(qt) { // qt in natural order
+    const d = new Float64Array(64);
+    for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++)
+      d[r * 8 + c] = 1.0 / (qt[r * 8 + c] * AAN[r] * AAN[c] * 8.0);
+    return d;
+  }
+
+  function fdct(data) { // in-place AAN forward DCT on 64 floats
+    for (let i = 0; i < 64; i += 8) {
+      const t0 = data[i] + data[i + 7], t7 = data[i] - data[i + 7];
+      const t1 = data[i + 1] + data[i + 6], t6 = data[i + 1] - data[i + 6];
+      const t2 = data[i + 2] + data[i + 5], t5 = data[i + 2] - data[i + 5];
+      const t3 = data[i + 3] + data[i + 4], t4 = data[i + 3] - data[i + 4];
+      let t10 = t0 + t3, t13 = t0 - t3, t11 = t1 + t2, t12 = t1 - t2;
+      data[i] = t10 + t11; data[i + 4] = t10 - t11;
+      const z1 = (t12 + t13) * 0.707106781;
+      data[i + 2] = t13 + z1; data[i + 6] = t13 - z1;
+      t10 = t4 + t5; t11 = t5 + t6; t12 = t6 + t7;
+      const z5 = (t10 - t12) * 0.382683433, z2 = 0.541196100 * t10 + z5, z4 = 1.306562965 * t12 + z5, z3 = t11 * 0.707106781;
+      const z11 = t7 + z3, z13 = t7 - z3;
+      data[i + 5] = z13 + z2; data[i + 3] = z13 - z2; data[i + 1] = z11 + z4; data[i + 7] = z11 - z4;
+    }
+    for (let i = 0; i < 8; i++) {
+      const t0 = data[i] + data[i + 56], t7 = data[i] - data[i + 56];
+      const t1 = data[i + 8] + data[i + 48], t6 = data[i + 8] - data[i + 48];
+      const t2 = data[i + 16] + data[i + 40], t5 = data[i + 16] - data[i + 40];
+      const t3 = data[i + 24] + data[i + 32], t4 = data[i + 24] - data[i + 32];
+      let t10 = t0 + t3, t13 = t0 - t3, t11 = t1 + t2, t12 = t1 - t2;
+      data[i] = t10 + t11; data[i + 32] = t10 - t11;
+      const z1 = (t12 + t13) * 0.707106781;
+      data[i + 16] = t13 + z1; data[i + 48] = t13 - z1;
+      t10 = t4 + t5; t11 = t5 + t6; t12 = t6 + t7;
+      const z5 = (t10 - t12) * 0.382683433, z2 = 0.541196100 * t10 + z5, z4 = 1.306562965 * t12 + z5, z3 = t11 * 0.707106781;
+      const z11 = t7 + z3, z13 = t7 - z3;
+      data[i + 40] = z13 + z2; data[i + 24] = z13 - z2; data[i + 8] = z11 + z4; data[i + 56] = z11 - z4;
+    }
+  }
+
+  // rgba: Uint8ClampedArray/Uint8Array of width*height*4. Returns Uint8Array JPEG.
+  function encodeJPEG(rgba, width, height, quality) {
+    const qY = scaleTable(STD_Y, quality), qC = scaleTable(STD_C, quality);
+    const dY = divisors(qY), dC = divisors(qC);
+    const out = []; let bitBuf = 0, bitCnt = 0;
+    const byte = b => out.push(b & 255), word = w => { byte(w >> 8); byte(w); };
+    function bits(code, len) {
+      bitBuf = (bitBuf << len) | code; bitCnt += len;
+      while (bitCnt >= 8) {
+        const b = (bitBuf >> (bitCnt - 8)) & 255; out.push(b); if (b === 255) out.push(0);
+        bitCnt -= 8; bitBuf &= (1 << bitCnt) - 1;
+      }
+    }
+    function catBits(v) { // returns [category, bits]
+      const a = Math.abs(v); let cat = 0; while ((a >> cat) > 0) cat++;
+      return [cat, v < 0 ? (v - 1) & ((1 << cat) - 1) : v];
+    }
+    // headers
+    word(0xFFD8);
+    word(0xFFE0); word(16); [0x4A,0x46,0x49,0x46,0,1,1,0,0,1,0,1,0,0].forEach(byte);
+    word(0xFFDB); word(132);
+    byte(0); for (let k = 0; k < 64; k++) byte(qY[NAT[k]]);
+    byte(1); for (let k = 0; k < 64; k++) byte(qC[NAT[k]]);
+    word(0xFFC0); word(17); byte(8); word(height); word(width); byte(3);
+    [[1, 0x11, 0], [2, 0x11, 1], [3, 0x11, 1]].forEach(([id, s, t]) => { byte(id); byte(s); byte(t); });
+    word(0xFFC4); word(2 + 4 * 17 + DC_L_VAL.length + DC_C_VAL.length + AC_L_VAL.length + AC_C_VAL.length);
+    [[0x00, DC_L_BITS, DC_L_VAL], [0x10, AC_L_BITS, AC_L_VAL], [0x01, DC_C_BITS, DC_C_VAL], [0x11, AC_C_BITS, AC_C_VAL]]
+      .forEach(([cls, b, v]) => { byte(cls); b.forEach(byte); v.forEach(byte); });
+    word(0xFFDA); word(12); byte(3); byte(1); byte(0x00); byte(2); byte(0x11); byte(3); byte(0x11); byte(0); byte(63); byte(0);
+
+    const Y = new Float64Array(64), U = new Float64Array(64), V = new Float64Array(64);
+    let pY = 0, pU = 0, pV = 0;
+    function block(data, div, prevDC, dc, ac) {
+      fdct(data);
+      const q = new Int32Array(64);
+      for (let k = 0; k < 64; k++) { const n = NAT[k]; q[k] = Math.round(data[n] * div[n]); }
+      const diff = q[0] - prevDC; let [c, b] = catBits(diff);
+      bits(dc[c][0], dc[c][1]); if (c) bits(b, c);
+      let run = 0;
+      for (let k = 1; k < 64; k++) {
+        if (q[k] === 0) { run++; continue; }
+        while (run > 15) { bits(ac[0xF0][0], ac[0xF0][1]); run -= 16; }
+        [c, b] = catBits(q[k]); const sym = (run << 4) | c;
+        bits(ac[sym][0], ac[sym][1]); bits(b, c); run = 0;
+      }
+      if (run) bits(ac[0][0], ac[0][1]);
+      return q[0];
+    }
+    for (let by = 0; by < height; by += 8) for (let bx = 0; bx < width; bx += 8) {
+      for (let r = 0; r < 8; r++) for (let c = 0; c < 8; c++) {
+        const x = Math.min(bx + c, width - 1), y = Math.min(by + r, height - 1), p = (y * width + x) * 4;
+        const R = rgba[p], G = rgba[p + 1], B = rgba[p + 2], i = r * 8 + c;
+        Y[i] = 0.299 * R + 0.587 * G + 0.114 * B - 128;
+        U[i] = -0.168736 * R - 0.331264 * G + 0.5 * B;
+        V[i] = 0.5 * R - 0.418688 * G - 0.081312 * B;
+      }
+      pY = block(Y, dY, pY, H.dcY, H.acY);
+      pU = block(U, dC, pU, H.dcC, H.acC);
+      pV = block(V, dC, pV, H.dcC, H.acC);
+    }
+    if (bitCnt > 0) bits((1 << (8 - bitCnt)) - 1, 8 - bitCnt); // pad with 1s
+    word(0xFFD9);
+    return Uint8Array.from(out);
+  }
+
+  // ---------- Containers ----------
+  const enc = new TextEncoder();
+  function u32(a, o, v) { a[o] = v & 255; a[o + 1] = (v >>> 8) & 255; a[o + 2] = (v >>> 16) & 255; a[o + 3] = (v >>> 24) & 255; }
+  function u16(a, o, v) { a[o] = v & 255; a[o + 1] = (v >>> 8) & 255; }
+
+  // Single image: "IMB\0" header (36 bytes) + JPEG. Header size fields as sent by the original app.
+  function wrapImage(jpeg) {
+    const h = new Uint8Array(36);
+    h.set([0x49, 0x4D, 0x42, 0x00], 0); u32(h, 4, 36); u32(h, 8, 36 + jpeg.length); u32(h, 12, 11);
+    u16(h, 16, 368); u16(h, 18, 368); u32(h, 20, 36); u32(h, 24, jpeg.length);
+    return concat([h, jpeg]);
+  }
+
+  // Animation: frame list + per-frame 32-byte headers + JPEGs.
+  function wrapVideo(jpegs, frameMs) {
+    const n = jpegs.length, dirLen = 16 + 16 * (n + 1);
+    let offs = [], pos = dirLen;
+    for (const j of jpegs) { offs.push(pos); pos += 32 + j.length; }
+    const total = pos, out = new Uint8Array(total);
+    u32(out, 0, 0x12345678); u32(out, 4, dirLen - 8); u32(out, 8, n); u32(out, 12, frameMs);
+    const name0 = enc.encode(('output/' + frameMs + 'ms').slice(0, 11));
+    out.set(name0, 16); u32(out, 28, total);
+    for (let i = 0; i < n; i++) {
+      const nm = enc.encode('frame_' + String(i + 1).padStart(5, '0') + '.');
+      out.set(nm, 32 + i * 16); u32(out, 44 + i * 16, offs[i]);
+      const o = offs[i], next = i + 1 < n ? offs[i + 1] : offs[0];
+      u32(out, o, o); u32(out, o + 4, next); u32(out, o + 8, 11); u16(out, o + 12, 360); u16(out, o + 14, 360);
+      u32(out, o + 16, o + 32); u32(out, o + 20, jpegs[i].length);
+      out.set(jpegs[i], o + 32);
+    }
+    return out;
+  }
+
+  // ---------- BLE framing ----------
+  // Packet: F1 | cmd | total(2,BE) | index(2,BE, counts down) | len(2,BE) | payload | checksum
+  // checksum = two's complement of the byte sum, so all bytes add up to 0 (mod 256).
+  const CHUNK = 496;
+  function packets(cmd, payload, chunk = CHUNK) {
+    const n = Math.max(1, Math.ceil(payload.length / chunk)), total = n === 1 ? 0 : n, res = [];
+    for (let i = 0; i < n; i++) {
+      const part = payload.subarray(i * chunk, (i + 1) * chunk), p = new Uint8Array(9 + part.length);
+      const idx = n - 1 - i;
+      p[0] = 0xF1; p[1] = cmd; p[2] = total >> 8; p[3] = total & 255; p[4] = idx >> 8; p[5] = idx & 255;
+      p[6] = part.length >> 8; p[7] = part.length & 255; p.set(part, 8);
+      let s = 0; for (let k = 0; k < p.length - 1; k++) s += p[k];
+      p[p.length - 1] = (-s) & 255; res.push(p);
+    }
+    return res;
+  }
+  function jsonData(type, bin) {
+    return concat([enc.encode('{"type":' + type + ',"data":'), bin, enc.encode('}')]);
+  }
+  const announce = () => enc.encode('{"type":6,"number":1}');
+
+  function imageMessages(jpeg) { return [packets(6, announce()), packets(6, jsonData(6, wrapImage(jpeg)))]; }
+  function videoMessages(jpegs, frameMs) { return [packets(6, announce()), packets(5, jsonData(5, wrapVideo(jpegs, frameMs)))]; }
+
+  // Parse a notification from the badge: A0 | cmd | ... | {json} | checksum
+  function parseNotify(bytes) {
+    const s = new TextDecoder('latin1').decode(bytes), a = s.indexOf('{'), b = s.lastIndexOf('}');
+    if (a < 0 || b < a) return { raw: bytes };
+    const text = s.slice(a, b + 1);
+    try { return { cmd: bytes[1], json: JSON.parse(text), text }; } catch { return { cmd: bytes[1], text }; }
+  }
+
+  function concat(parts) {
+    const len = parts.reduce((a, p) => a + p.length, 0), out = new Uint8Array(len); let o = 0;
+    for (const p of parts) { out.set(p, o); o += p.length; }
+    return out;
+  }
+
+  return { encodeJPEG, wrapImage, wrapVideo, packets, imageMessages, videoMessages, parseNotify, jsonData, CHUNK };
+})();
+if (typeof module !== 'undefined') module.exports = BadgeCore;
+
+</script>
+<script>
+// ===== Badge Uploader: UI + Web Bluetooth =====
+(() => {
+  const OUT = 360;                                  // output image size (px)
+  const SERVICE = 0x01F0, CH_WRITE = 0x01F1, CH_NOTIFY = 0x01F2;
+  const MAX_FPS = 20;                               // higher frame rates stutter on the badge
+  const $ = id => document.getElementById(id);
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const isPhone = () => matchMedia('(max-width: 700px)').matches;
+
+  const st = {
+    dev: null, chWrite: null, ackCount: 0, free: null, total: null,
+    kind: null, img: null, video: null, anim: null, animDur: 0, srcW: 0, srcH: 0, srcFps: null,
+    size: 1, rot: 0, panX: 0, panY: 0,                // size 1 = fills the circle; pan in output px
+    fps: 20, pace: 25, sending: false, cancel: false,
+    alert: null, nofit: null, userDisc: false,      // alert: {type, text, action}
+  };
+
+  // ======================= Bluetooth =======================
+  function renderConn() {
+    const on = !!st.chWrite;
+    $('btnConnect').hidden = on;
+    $('devBar').hidden = !on;
+    $('devName').textContent = (st.dev && st.dev.name) || 'Badge';
+    let store = '';
+    if (on && st.free != null) {
+      const free = st.free / 1024, used = (st.total - st.free) / 1024;
+      store = `<span class="used">${used.toFixed(1)} MB used · </span>${free.toFixed(1)} MB free`;
+    }
+    $('devStore').innerHTML = store;
+    $('mStat').hidden = !on || barVisible;
+    $('mStatText').textContent = on ? `${(st.dev && st.dev.name) || 'Badge'}${st.free != null ? ' · ' + (st.free / 1024).toFixed(1) + ' MB free' : ''}` : '';
+    renderEstimate();
+  }
+
+  async function connect() {
+    $('topMsg').hidden = true;
+    if (!navigator.bluetooth) {
+      showTop('Bluetooth is not available in this browser. Use Google Chrome on a Mac/PC or Android (iPhone browsers do not support it).');
+      return false;
+    }
+    try {
+      const dev = await navigator.bluetooth.requestDevice({ acceptAllDevices: true, optionalServices: [SERVICE] });
+      st.dev = dev;
+      dev.addEventListener('gattserverdisconnected', () => {
+        st.chWrite = null; st.free = null;
+        if (!st.userDisc && st.kind) setAlert('lost');
+        st.userDisc = false; renderConn();
+      });
+      const gatt = await dev.gatt.connect();
+      const svc = await gatt.getPrimaryService(SERVICE);
+      st.chWrite = await svc.getCharacteristic(CH_WRITE);
+      const chN = await svc.getCharacteristic(CH_NOTIFY);
+      chN.addEventListener('characteristicvaluechanged', e => onNotify(new Uint8Array(e.target.value.buffer)));
+      await chN.startNotifications();
+      if (st.alert && st.alert.type === 'lost') st.alert = null;
+      renderConn(); renderSend();
+      return true;
+    } catch (e) {
+      st.chWrite = null;
+      if (st.dev && st.dev.gatt.connected) st.dev.gatt.disconnect();
+      renderConn();
+      if (/cancel/i.test(e.message)) return false;
+      const wrong = e.name === 'NotFoundError' && /service|characteristic/i.test(e.message);
+      showTop(wrong ? 'The selected device is not a compatible badge (Bluetooth service 01F0 missing).' : 'Connection failed: ' + e.message);
+      return false;
+    }
+  }
+  function showTop(t) { $('topMsg').textContent = t; $('topMsg').hidden = false; }
+
+  function onNotify(bytes) {
+    const n = BadgeCore.parseNotify(bytes);
+    if (n.text && n.text.includes('GetPacketSuccess')) { st.ackCount++; return; }
+    if (n.json && n.json.type === 13) { st.free = n.json.freespace; st.total = n.json.allspace; renderConn(); }
+  }
+
+  async function waitAck(target, ms) {
+    const t0 = Date.now();
+    while (st.ackCount < target && Date.now() - t0 < ms && !st.cancel) await sleep(20);
+    return st.ackCount >= target;
+  }
+  async function write(p) {
+    if (!st.chWrite) throw new Error('Connection lost');
+    if (st.chWrite.writeValueWithoutResponse) await st.chWrite.writeValueWithoutResponse(p);
+    else await st.chWrite.writeValue(p);
+  }
+  // Packets go out on a fixed schedule: macOS silently drops write-without-response
+  // packets that are sent faster than the link can carry them.
+  async function sendMessages([announce, data], onProgress) {
+    const base = st.ackCount;
+    for (const p of announce) await write(p);
+    await waitAck(base + 1, 1500);
+    const t0 = performance.now(), gap = st.pace;
+    for (let i = 0; i < data.length; i++) {
+      if (st.cancel) throw new Error('Cancelled');
+      try { await write(data[i]); }
+      catch (e) { throw new Error(`Packet ${i + 1} of ${data.length} could not be sent (${e.message})`); }
+      const wait = t0 + (i + 1) * gap - performance.now();
+      if (wait > 0) await sleep(wait);
+      if (i % 8 === 0 || i === data.length - 1) onProgress(i + 1, data.length, performance.now() - t0);
+    }
+    return waitAck(base + 2, 20000);
+  }
+
+  // ======================= loading files =======================
+  async function loadFile(file) {
+    resetSource();
+    if (st.alert && st.alert.type === 'error') st.alert = null;
+    showMsg('');
+    try {
+      if (file.type.startsWith('video/') || /\.(mp4|mov|m4v|webm)$/i.test(file.name)) await loadVideo(file);
+      else if (/image\/(gif|webp|png)/.test(file.type) && 'ImageDecoder' in window && await loadAnimated(file)) { /* animated */ }
+      else await loadImage(file);
+    } catch (e) { showMsg('Could not open file: ' + e.message, true); return; }
+
+    $('fName').textContent = file.name;
+    $('timeOpts').hidden = st.kind === 'image';
+    resetCrop();
+    if (st.kind !== 'image') setupTime();
+    renderChips();
+    // layout transition: drop zone shrinks, editor slides in
+    $('app').classList.remove('empty');
+    $('drop').classList.add('compact');
+    const ed = $('editor');
+    if (ed.hidden) { ed.hidden = false; requestAnimationFrame(() => requestAnimationFrame(() => ed.classList.add('show'))); }
+    sizeCanvas();
+    updateSendBtn();
+    updateEstimate();
+  }
+
+  function resetSource() {
+    if (st.video) { st.video.pause(); URL.revokeObjectURL(st.video.src); }
+    if (st.anim) st.anim.forEach(f => f.bmp.close && f.bmp.close());
+    if (st.img && st.img.close) st.img.close();
+    Object.assign(st, { kind: null, img: null, video: null, anim: null, animDur: 0, srcFps: null });
+    srcId++; encResult = null; EST.key = null; EST.avg = null; probe = null;
+  }
+  async function loadImage(file) {
+    const bmp = await createImageBitmap(file);
+    Object.assign(st, { kind: 'image', img: bmp, srcW: bmp.width, srcH: bmp.height });
+  }
+  async function loadAnimated(file) {
+    const dec = new ImageDecoder({ data: await file.arrayBuffer(), type: file.type });
+    await dec.tracks.ready; await dec.completed;
+    const count = dec.tracks.selectedTrack.frameCount;
+    if (count < 2) { dec.close(); return false; }
+    const frames = []; let t = 0;
+    for (let i = 0; i < count; i++) {
+      const { image } = await dec.decode({ frameIndex: i });
+      const dur = Math.max(0.02, (image.duration || 100000) / 1e6);
+      const bmp = await createImageBitmap(image); image.close();
+      frames.push({ bmp, start: t, dur }); t += dur;
+    }
+    dec.close();
+    const d = frames.map(f => f.dur).sort((a, b) => a - b);
+    Object.assign(st, { kind: 'anim', anim: frames, animDur: t, srcW: frames[0].bmp.width, srcH: frames[0].bmp.height, srcFps: 1 / d[d.length >> 1] });
+    return true;
+  }
+  function loadVideo(file) {
+    return new Promise((res, rej) => {
+      const v = document.createElement('video');
+      v.muted = true; v.playsInline = true; v.loop = true; v.preload = 'auto';
+      v.onloadeddata = () => {
+        Object.assign(st, { kind: 'video', video: v, srcW: v.videoWidth, srcH: v.videoHeight });
+        v.play().catch(() => {});
+        detectVideoFps(v);
+        res();
+      };
+      v.onerror = () => rej(new Error('video format not supported by Chrome'));
+      v.src = URL.createObjectURL(file);
+    });
+  }
+  function detectVideoFps(v) {
+    if (!v.requestVideoFrameCallback) { st.srcFps = 30; afterFps(); return; }
+    const gaps = []; let last = null;
+    const cb = (now, meta) => {
+      if (st.video !== v) return;
+      if (last && meta.presentedFrames === last.n + 1 && meta.mediaTime > last.t) gaps.push(meta.mediaTime - last.t);
+      last = { n: meta.presentedFrames, t: meta.mediaTime };
+      if (gaps.length < 24) v.requestVideoFrameCallback(cb);
+      else { gaps.sort((a, b) => a - b); st.srcFps = 1 / gaps[gaps.length >> 1]; afterFps(); }
+    };
+    v.requestVideoFrameCallback(cb);
+    setTimeout(() => { if (st.video === v && !st.srcFps) { st.srcFps = 30; afterFps(); } }, 4000);
+  }
+  function afterFps() {
+    // round 29.97 -> 30, 23.976 -> 24
+    if (Math.abs(st.srcFps - Math.round(st.srcFps)) < 0.1) st.srcFps = Math.round(st.srcFps);
+    renderChips(); buildFpsPresets(true); updateEstimate();
+  }
+  const duration = () => st.kind === 'video' ? st.video.duration : st.kind === 'anim' ? st.animDur : 0;
+
+  function renderChips() {
+    const chips = [];
+    if (st.kind !== 'image') {
+      chips.push(duration().toFixed(1) + ' s');
+      chips.push(st.srcFps ? (Math.round(st.srcFps * 10) / 10) + ' fps' : '… fps');
+    }
+    $('fChips').innerHTML = chips.map(c => `<span class="chip">${c}</span>`).join('');
+  }
+
+  // ======================= frames per second =======================
+  // Presets: the highest usable rate, then the source rate divided by 2, 3, 4 …
+  // Divisors keep every n-th source frame, so motion stays even.
+  let presets = [];
+  function buildFpsPresets(selectDefault) {
+    const src = st.srcFps || 30, top = Math.min(src, MAX_FPS);
+    presets = [top];
+    for (let k = 2; presets.length < 4 && k < 60; k++) {
+      const v = src / k;
+      if (v < 1) break;                                   // nothing below 1 fps
+      if (v < top - 0.01 && Math.round(v) !== Math.round(presets[presets.length - 1])) presets.push(v);
+    }
+    if (selectDefault) {
+      // default: the highest exact divisor of the source (smooth), e.g. 25 -> 12.5, 30 -> 15, 20 -> 20
+      let k = 1; while (src / k > MAX_FPS + 0.01) k++;
+      st.fps = src / k;
+    }
+    $('fpsBtns').style.gridTemplateColumns = `repeat(${Math.max(presets.length, 1)}, minmax(0, 1fr))`;
+    $('fpsBtns').innerHTML = presets.map((v, i) => `<button role="radio" data-i="${i}" aria-checked="false">${Math.round(v)}</button>`).join('');
+    syncFps();
+  }
+  function syncFps() {
+    $('fpsNum').value = Math.round(st.fps * 10) / 10;
+    [...$('fpsBtns').children].forEach((b, i) => b.setAttribute('aria-checked', Math.abs(presets[i] - st.fps) < 0.01 ? 'true' : 'false'));
+  }
+  const maxFps = () => Math.min(st.srcFps || MAX_FPS, MAX_FPS);
+
+  // ======================= time =======================
+  function setupTime() {
+    const d = duration();
+    $('start').max = Math.max(0, d - 0.1); $('start').value = 0;
+    $('len').max = d; $('len').value = Math.min(d, 10);
+    syncTime();
+    if (st.kind === 'anim') buildFpsPresets(true); else buildFpsPresets(true);
+  }
+  function syncTime() {
+    const d = duration(), s = +$('start').value;
+    if (+$('len').value > d - s) $('len').value = Math.max(0.1, d - s);
+    $('startNum').value = s.toFixed(1); $('lenNum').value = (+$('len').value).toFixed(1);
+    fill('start'); fill('len');
+  }
+
+  // ======================= crop (size / rotate / pan) =======================
+  // size slider: -1..1 maps to 50 %..200 % (log scale), typed values may go beyond
+  const sizeToSlider = s => clamp(Math.log2(s), -1, 1);
+  function setSize(s) { st.size = clamp(s, 0.05, 10); $('size').value = sizeToSlider(st.size); $('sizeNum').value = Math.round(st.size * 100); fill('size'); updateEstimate(); }
+  function setRot(r) {
+    r = ((r + 540) % 360) - 180;
+    for (const snap of [-180, -90, 0, 90, 180]) if (Math.abs(r - snap) < 2) r = snap;
+    st.rot = r; $('rot').value = r; $('rotNum').value = Math.round(r * 10) / 10; fill('rot'); updateEstimate();
+  }
+  function resetCrop() { st.panX = 0; st.panY = 0; setRot(0); setSize(1); }
+
+  function fill(id) {
+    const el = $(id), f = $(id + 'Fill'); if (!f) return;
+    const min = +el.min, max = +el.max, p = (+el.value - min) / (max - min) * 100;
+    if (el.dataset.center) { const c = 50; f.style.left = Math.min(c, p) + '%'; f.style.width = Math.abs(p - c) + '%'; }
+    else { f.style.left = '0'; f.style.width = p + '%'; }
+  }
+
+  // Draws the source with the current crop into ctx; (0,0)-(OUT,OUT) is the badge circle's square.
+  function drawTransformed(ctx, source) {
+    const sc = Math.max(OUT / st.srcW, OUT / st.srcH) * st.size;
+    ctx.save();
+    ctx.translate(OUT / 2 + st.panX, OUT / 2 + st.panY);
+    ctx.rotate(st.rot * Math.PI / 180);
+    ctx.scale(sc, sc);
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(source, -st.srcW / 2, -st.srcH / 2, st.srcW, st.srcH);
+    ctx.restore();
+  }
+  function animFrameAt(t) {
+    const f = st.anim; let lo = 0, hi = f.length - 1;
+    while (lo < hi) { const m = (lo + hi + 1) >> 1; if (f[m].start <= t) lo = m; else hi = m - 1; }
+    return f[lo].bmp;
+  }
+  function currentSource(ts) {
+    if (st.kind === 'image') return st.img;
+    if (st.kind === 'video') return st.video.readyState >= 2 ? st.video : null;
+    if (st.kind === 'anim') { const s = +$('start').value, l = Math.max(0.05, +$('len').value); return animFrameAt(s + ((ts / 1000) % l)); }
+    return null;
+  }
+
+  // ---------- preview ----------
+  const pv = $('preview'), pctx = pv.getContext('2d');
+  let boxPx = 380, circlePx = 320;
+  // the preview grows and shrinks with its column; the circle is always the same share of it
+  function sizeCanvas() {
+    boxPx = $('pvBox').offsetWidth || 380; circlePx = boxPx * 320 / 380;
+    const dpr = window.devicePixelRatio || 1;
+    pv.width = Math.round(boxPx * dpr); pv.height = Math.round(boxPx * dpr);
+    onScroll();
+  }
+  window.addEventListener('resize', () => { sizeCanvas(); onScroll(); });
+  if ('ResizeObserver' in window) new ResizeObserver(() => sizeCanvas()).observe($('pvBox'));
+
+  // ---------- result preview: inside the circle shows the encoded output ----------
+  // (same JPEG quality, held for 1/fps like on the badge). While the user is dragging or
+  // moving a slider, the raw source is shown so the controls stay smooth.
+  let lastInteract = 0, encBusy = false, encResult = null;   // encResult: {key, bmp}
+  const interacting = () => performance.now() - lastInteract < 180 || pointers.size > 0;
+  const touch = () => { lastInteract = performance.now(); };
+  function frameKey(ts) {
+    const crop = [st.size, st.rot, st.panX, st.panY, quality()].map(v => Math.round(v * 1000)).join(',');
+    if (st.kind === 'image') return { base: `i|${srcId}|` + crop, key: `i|${srcId}|` + crop, t: 0 };
+    const s = +$('start').value, l = Math.max(0.05, +$('len').value);
+    let t;
+    if (st.kind === 'video') t = st.video.currentTime - s;
+    else t = (ts / 1000) % l;
+    const idx = Math.max(0, Math.floor(t * st.fps));
+    const base = `${st.kind}|${srcId}|${st.fps}|` + crop;
+    return { base, key: base + '|' + idx, t: s + idx / st.fps };
+  }
+  let srcId = 0;
+  function requestEncode(fk, source) {
+    if (encBusy || !source) return;
+    encBusy = true;
+    let jpeg;
+    try { jpeg = encodeSource(source); } catch (e) { encBusy = false; return; }
+    createImageBitmap(new Blob([jpeg], { type: 'image/jpeg' })).then(bmp => {
+      if (encResult && encResult.bmp.close) encResult.bmp.close();
+      encResult = { key: fk.key, base: fk.base, bmp };
+    }).catch(() => {}).finally(() => { encBusy = false; });
+  }
+
+  function drawPreview(ts) {
+    if (st.kind) {
+      if (st.kind === 'video' && st.video.readyState >= 2 && !st.sending) {
+        const s = +$('start').value, l = +$('len').value;
+        if (st.video.currentTime < s - 0.05 || st.video.currentTime > s + l) st.video.currentTime = s;
+      }
+      const src = currentSource(ts);
+      const dpr = pv.width / boxPx, k = circlePx / OUT;
+      pctx.setTransform(1, 0, 0, 1, 0, 0);
+      pctx.fillStyle = '#0B0B0D'; pctx.fillRect(0, 0, pv.width, pv.height);
+      if (src) {
+        pctx.setTransform(dpr * k, 0, 0, dpr * k, dpr * (boxPx - circlePx) / 2, dpr * (boxPx - circlePx) / 2);
+        drawTransformed(pctx, src);
+        // the real badge result inside the circle
+        if (!interacting() && !st.sending) {
+          const fk = frameKey(ts);
+          if (!encResult || encResult.key !== fk.key) {
+            const encSrc = st.kind === 'anim' ? animFrameAt(fk.t) : src;
+            requestEncode(fk, encSrc);
+          }
+          if (encResult && encResult.base === fk.base) {          // hold the last frame, like the badge does
+            pctx.save();
+            pctx.beginPath(); pctx.arc(OUT / 2, OUT / 2, OUT / 2, 0, Math.PI * 2); pctx.clip();
+            pctx.drawImage(encResult.bmp, 0, 0, OUT, OUT);
+            pctx.restore();
+          }
+        }
+      }
+      // dim everything outside the circle, then a thin ring
+      pctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      pctx.beginPath(); pctx.rect(0, 0, boxPx, boxPx); pctx.arc(boxPx / 2, boxPx / 2, circlePx / 2, 0, Math.PI * 2, true);
+      pctx.fillStyle = 'rgba(8,8,10,.68)'; pctx.fill('evenodd');
+      pctx.beginPath(); pctx.arc(boxPx / 2, boxPx / 2, circlePx / 2, 0, Math.PI * 2);
+      pctx.strokeStyle = 'rgba(255,255,255,.4)'; pctx.lineWidth = 1.5; pctx.stroke();
+    }
+    requestAnimationFrame(drawPreview);
+  }
+  requestAnimationFrame(drawPreview);
+
+  // ---------- gestures: drag, wheel, pinch, double-click / double-tap ----------
+  const pointers = new Map(); let gesture = null, lastTap = 0;
+  const shrink = () => { const m = /scale\(([\d.]+)\)/.exec($('pvBox').style.transform); return m ? +m[1] : 1; };
+  const toOut = () => OUT / circlePx / shrink();              // css px -> output px
+  function gestureStart() {
+    const pts = [...pointers.values()];
+    if (pts.length === 1) gesture = { mode: 'pan', x: pts[0].x, y: pts[0].y, px: st.panX, py: st.panY };
+    else if (pts.length >= 2) {
+      const [a, b] = pts;
+      gesture = { mode: 'pinch', d: Math.hypot(b.x - a.x, b.y - a.y), ang: Math.atan2(b.y - a.y, b.x - a.x),
+        mx: (a.x + b.x) / 2, my: (a.y + b.y) / 2, size: st.size, rot: st.rot, px: st.panX, py: st.panY };
+    }
+  }
+  pv.addEventListener('pointerdown', e => {
+    if (!st.kind) return;
+    pv.setPointerCapture(e.pointerId);
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    gestureStart();
+  });
+  pv.addEventListener('pointermove', e => {
+    if (!pointers.has(e.pointerId)) return;
+    touch();
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    const pts = [...pointers.values()], k = toOut();
+    if (gesture && gesture.mode === 'pan' && pts.length === 1) {
+      st.panX = gesture.px + (pts[0].x - gesture.x) * k; st.panY = gesture.py + (pts[0].y - gesture.y) * k;
+    } else if (gesture && gesture.mode === 'pinch' && pts.length >= 2) {
+      const [a, b] = pts, d = Math.hypot(b.x - a.x, b.y - a.y), ang = Math.atan2(b.y - a.y, b.x - a.x);
+      setSize(gesture.size * d / gesture.d);
+      setRot(gesture.rot + (ang - gesture.ang) * 180 / Math.PI);
+      st.panX = gesture.px + ((a.x + b.x) / 2 - gesture.mx) * k; st.panY = gesture.py + ((a.y + b.y) / 2 - gesture.my) * k;
+    }
+  });
+  const endPointer = e => {
+    if (!pointers.has(e.pointerId)) return;
+    pointers.delete(e.pointerId);
+    if (e.pointerType === 'touch' && e.type === 'pointerup' && pointers.size === 0 && gesture && gesture.mode === 'pan') {
+      const moved = Math.abs(st.panX - gesture.px) + Math.abs(st.panY - gesture.py);
+      const now = performance.now();
+      if (moved < 3) { if (now - lastTap < 320) { resetCrop(); lastTap = 0; } else lastTap = now; }
+    }
+    gestureStart(); if (!pointers.size) { gesture = null; updateEstimate(); }
+  };
+  pv.addEventListener('pointerup', endPointer); pv.addEventListener('pointercancel', endPointer);
+  pv.addEventListener('dblclick', () => st.kind && resetCrop());
+  pv.addEventListener('wheel', e => { if (!st.kind) return; e.preventDefault(); touch(); setSize(st.size * Math.exp(-e.deltaY * 0.002)); }, { passive: false });
+
+  // ---------- phone: preview stays on top and shrinks while scrolling ----------
+  function onScroll() {
+    const box = $('pvBox'), holder = $('pvHolder');
+    if (!isPhone()) { box.style.transform = ''; holder.style.height = ''; return; }
+    const s = Math.max(0.62, 1 - window.scrollY / 260);
+    box.style.transform = `scale(${s})`; holder.style.height = (box.offsetWidth * s) + 'px';   // real size, not a cached value
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  // ======================= encoding =======================
+  const work = document.createElement('canvas'); work.width = work.height = OUT;
+  const wctx = work.getContext('2d', { willReadFrequently: true });
+  const quality = () => +$('quality').value;
+  function encodeSource(source) {
+    wctx.setTransform(1, 0, 0, 1, 0, 0);
+    wctx.fillStyle = '#000'; wctx.fillRect(0, 0, OUT, OUT);
+    drawTransformed(wctx, source);
+    return BadgeCore.encodeJPEG(wctx.getImageData(0, 0, OUT, OUT).data, OUT, OUT, quality());
+  }
+  function seek(v, t) {
+    return new Promise(res => { const h = () => { v.removeEventListener('seeked', h); res(); }; v.addEventListener('seeked', h); v.currentTime = t; });
+  }
+  const frameCount = () => Math.max(1, Math.round(+$('len').value * st.fps));
+  // sample time of output frame i; the small offset lands safely inside the source frame
+  const sampleTime = i => +$('start').value + i / st.fps + 0.25 / (st.srcFps || 30);
+  async function buildFrames(onProgress) {
+    const n = frameCount(), out = [];
+    if (st.kind === 'video') {
+      const v = st.video; v.pause();
+      for (let i = 0; i < n; i++) {
+        if (st.cancel) throw new Error('Cancelled');
+        await seek(v, Math.min(v.duration - 0.001, sampleTime(i)));
+        out.push(encodeSource(v)); onProgress(i + 1, n);
+      }
+      v.play().catch(() => {});
+    } else {
+      for (let i = 0; i < n; i++) {
+        if (st.cancel) throw new Error('Cancelled');
+        out.push(encodeSource(animFrameAt(sampleTime(i)))); onProgress(i + 1, n);
+        if (i % 8 === 0) await sleep(0);
+      }
+    }
+    return out;
+  }
+
+  // ======================= estimate =======================
+  // The size estimate is the average of several frames spread over the chosen part
+  // (a single frame can be far bigger or smaller than the average). It is only
+  // recalculated when a setting changes – a storage update from the badge just
+  // re-checks whether the cached result still fits.
+  let estTimer = null, estToken = 0;
+  const EST = { key: null, avg: null, busy: false };
+  const estKey = () => [srcId, st.kind, $('start').value, $('len').value, st.fps, quality(),
+    st.size, st.rot, Math.round(st.panX), Math.round(st.panY)].join('|');
+
+  function updateEstimate() {
+    clearTimeout(estTimer);
+    estTimer = setTimeout(async () => {
+      if (!st.kind || st.sending) return;
+      const key = estKey();
+      if (key === EST.key && EST.avg != null) { renderEstimate(); return; }
+      const token = ++estToken; EST.busy = true; renderEstimate();
+      let avg = null;
+      try { avg = await averageFrameBytes(token); } catch (e) { avg = null; }
+      if (token !== estToken) return;                 // a newer change is already being calculated
+      EST.busy = false;
+      if (avg != null) { EST.key = key; EST.avg = avg; }
+      renderEstimate();
+    }, 250);
+  }
+
+  // probe video: a hidden copy of the source, so sampling never disturbs the preview
+  let probe = null;
+  function probeSeek(t) {
+    return new Promise((res, rej) => {
+      const to = setTimeout(() => { probe.removeEventListener('seeked', h); rej(new Error('seek timeout')); }, 3000);
+      const h = () => { clearTimeout(to); probe.removeEventListener('seeked', h); res(); };
+      probe.addEventListener('seeked', h); probe.currentTime = t;
+    });
+  }
+  async function averageFrameBytes(token) {
+    if (st.kind === 'image') return encodeSource(st.img).length;
+    const n = Math.min(6, frameCount()), s = +$('start').value, l = +$('len').value;
+    const times = Array.from({ length: n }, (_, i) => s + (l * (i + 0.5)) / n);
+    let total = 0;
+    for (const t of times) {
+      if (token !== estToken) throw new Error('stale');
+      let src;
+      if (st.kind === 'anim') src = animFrameAt(t);
+      else {
+        if (!probe || probe.dataset.src !== st.video.src) {
+          probe = document.createElement('video'); probe.muted = true; probe.preload = 'auto';
+          probe.dataset.src = st.video.src; probe.src = st.video.src;
+          await new Promise((res, rej) => { probe.onloadeddata = res; probe.onerror = rej; });
+        }
+        await probeSeek(Math.min(probe.duration - 0.001, t)); src = probe;
+      }
+      total += encodeSource(src).length;
+      await sleep(0);                                 // keep the page responsive
+    }
+    return total / n;
+  }
+
+  function renderEstimate() {
+    if (!st.kind) return;
+    if (EST.avg == null || EST.key !== estKey()) {     // nothing valid yet
+      $('estA').textContent = 'Calculating size …'; $('estB').textContent = '';
+      return;
+    }
+    const one = EST.avg, frames = st.kind === 'image' ? 1 : frameCount();
+    const bytes = frames * (one + 48) + 800, kb = bytes / 1024;
+    const secs = Math.ceil(bytes / 496) * st.pace / 1000;
+    const size = kb < 1024 ? Math.round(kb) + ' KB' : (kb / 1024).toFixed(1) + ' MB';
+    $('estA').textContent = `≈ ${size}` + (frames > 1 ? ` · ${frames} frames` : '');
+    $('estB').textContent = `≈ ${secs < 60 ? Math.max(1, Math.ceil(secs)) + ' s' : (secs / 60).toFixed(1) + ' min'}`;
+    // 3 % safety margin, because this is an average
+    const tooBig = st.free != null && kb * 1.03 > st.free;
+    $('estimate').classList.toggle('warn', tooBig);
+    st.nofit = null;
+    if (tooBig) {
+      const maxSec = frames > 1 ? Math.floor((st.free * 1024 / 1.03 - 800) / (one + 48) / st.fps * 10) / 10 : 0;
+      st.nofit = { maxSec, freeMB: (st.free / 1024).toFixed(1) };
+    }
+    renderSend();
+  }
+
+  // ======================= send =======================
+  const ICON_SEND = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5"></path><path d="M5 12l7-7 7 7"></path></svg>';
+  const ICON_WARN = '<svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.5 L22.5 21 H1.5 Z" fill="#FFD23F" stroke="#1A1206" stroke-width="1.2" stroke-linejoin="round"></path><path d="M12 9v5.5" stroke="#1A1206" stroke-width="2.4" stroke-linecap="round"></path><circle cx="12" cy="17.6" r="1.4" fill="#1A1206"></circle></svg>';
+  let progress = null;                                   // {p, text} while sending
+  function setAlert(type, detail) {
+    if (type === 'lost') st.alert = { type, text: 'Badge disconnected – reconnect', detail: detail || 'The Bluetooth connection was lost. Click to reconnect.' };
+    else if (type === 'error') st.alert = { type, text: 'Upload failed – try again', detail };
+    else st.alert = null;
+    renderSend();
+  }
+  // which problem (if any) the send button shows: connection > upload error > does not fit
+  function currentAlert() {
+    if (st.alert) return st.alert;
+    if (st.nofit) {
+      const { maxSec, freeMB } = st.nofit;
+      return maxSec >= 0.5
+        ? { type: 'nofit', text: `Too large – shorten to ${maxSec.toFixed(1)} s`, detail: `Only ${freeMB} MB free on the badge. Click to shorten automatically, or choose fewer frames/sec or lower quality.` }
+        : { type: 'nofit', text: 'Too large for the badge', detail: `Only ${freeMB} MB free on the badge. Lower the quality or free up space on the badge.`, noAction: true };
+    }
+    return null;
+  }
+  function renderSend() {
+    const b = $('btnSend'), a = progress ? null : currentAlert();
+    b.disabled = !st.kind || !!(a && a.noAction);
+    b.classList.toggle('alert', !!a);
+    $('sendIcon').innerHTML = a ? ICON_WARN : ICON_SEND;
+    $('pbar').style.width = progress ? (progress.p * 100).toFixed(1) + '%' : '0';
+    $('sendText').textContent = progress ? progress.text : a ? a.text : (doneFlash || 'Send to badge');
+    if (a) showMsg(a.detail || '', true); else if ($('msg').dataset.kind === 'alert') showMsg('');
+    if (a) $('msg').dataset.kind = 'alert';
+  }
+  let doneFlash = null;
+  function updateSendBtn() { renderSend(); }
+  function sendState(p, text) { progress = p == null ? null : { p, text }; renderSend(); }
+  function showMsg(t, err) { $('msg').textContent = t; $('msg').className = err ? 'msg err' : 'msg'; $('msg').dataset.kind = ''; }
+
+  async function send() {
+    if (st.sending) { st.cancel = true; return; }                       // second click = cancel
+    const a = currentAlert();
+    if (a && a.type === 'nofit') {                                       // shorten to what fits
+      $('len').value = Math.max(0.1, a.text ? st.nofit.maxSec : +$('len').value); syncTime(); updateEstimate(); return;
+    }
+    if (a && a.type === 'lost') { await connect(); return; }
+    if (a && a.type === 'error') st.alert = null;                        // retry
+    if (!st.chWrite && !(await connect())) return;
+    st.sending = true; st.cancel = false; showMsg('');
+    try {
+      let msgs;
+      if (st.kind === 'image') { sendState(0, 'Preparing …'); msgs = BadgeCore.imageMessages(encodeSource(st.img)); }
+      else {
+        const frames = await buildFrames((i, n) => sendState(i / n * 0.15, `Preparing ${Math.round(i / n * 100)} % · click to cancel`));
+        msgs = BadgeCore.videoMessages(frames, Math.round(1000 / st.fps));
+      }
+      const kb = msgs[1].reduce((a, p) => a + p.length, 0) / 1024;
+      if (st.free != null && kb > st.free) throw new Error(`Too large: ${Math.round(kb)} KB, only ${st.free} KB free. Choose a shorter length, fewer frames/sec or lower quality.`);
+      const base = st.kind === 'image' ? 0 : 0.15;
+      const ok = await sendMessages(msgs, (i, n, ms) => {
+        const left = Math.ceil(ms / i * (n - i) / 1000);
+        sendState(base + (1 - base) * i / n, `Sending ${Math.round(i / n * 100)} % · ${left} s · click to cancel`);
+      });
+      doneFlash = ok ? 'Done ✓' : 'Sent'; sendState(null);
+      if (!ok) showMsg('The badge did not confirm receipt. Please check whether it arrived.', true);
+      setTimeout(() => { doneFlash = null; renderSend(); }, 2500);
+    } catch (e) {
+      sendState(null);
+      if (e.message === 'Cancelled') showMsg('Cancelled.');
+      else if (!st.chWrite) setAlert('lost', 'The connection was lost during the upload (' + e.message + '). Click to reconnect, then send again – the "Safe" transfer speed can help.');
+      else setAlert('error', e.message + ' – try again, if it keeps failing choose the "Safe" transfer speed.');
+    } finally { st.sending = false; st.cancel = false; renderEstimate(); }
+  }
+
+  // ======================= wiring =======================
+  $('btnConnect').onclick = connect;
+  $('btnDisconnect').onclick = () => { st.userDisc = true; if (st.alert && st.alert.type === 'lost') st.alert = null; if (st.dev && st.dev.gatt.connected) st.dev.gatt.disconnect(); renderSend(); };
+  $('btnSend').onclick = send;
+  $('btnReset').onclick = resetCrop;
+  $('btnFull').onclick = () => { $('len').value = duration() - +$('start').value; syncTime(); updateEstimate(); };
+
+  const drop = $('drop'), picker = $('file');
+  picker.onchange = () => { if (picker.files[0]) loadFile(picker.files[0]); picker.value = ''; };
+  ['dragenter', 'dragover'].forEach(ev => document.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('hover'); }));
+  ['dragleave', 'drop'].forEach(ev => document.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('hover'); }));
+  document.addEventListener('drop', e => { const f = e.dataTransfer.files[0]; if (f) loadFile(f); });
+
+  $('size').addEventListener('input', e => { touch(); setSize(Math.pow(2, +e.target.value)); });
+  $('rot').addEventListener('input', e => { touch(); setRot(+e.target.value); });
+  ['start', 'len'].forEach(id => $(id).addEventListener('input', () => { syncTime(); updateEstimate(); }));
+  $('quality').addEventListener('input', () => { touch(); $('qualNum').value = $('quality').value; fill('quality'); updateEstimate(); });
+  $('fpsBtns').addEventListener('click', e => { const b = e.target.closest('[data-i]'); if (!b) return; st.fps = presets[+b.dataset.i]; syncFps(); updateEstimate(); });
+  $('paceBtns').addEventListener('click', e => {
+    const b = e.target.closest('[data-v]'); if (!b) return;
+    st.pace = +b.dataset.v; [...$('paceBtns').children].forEach(x => x.setAttribute('aria-checked', x === b ? 'true' : 'false')); renderEstimate();
+  });
+
+  // numbers next to the controls: click, type, Enter (or click elsewhere); Esc cancels
+  function onNum(id, apply) {
+    const el = $(id);
+    el.addEventListener('focus', () => el.select());
+    el.addEventListener('keydown', e => { if (e.key === 'Enter') el.blur(); if (e.key === 'Escape') { el.dataset.esc = 1; el.blur(); } });
+    el.addEventListener('blur', () => {
+      if (!el.dataset.esc && el.value !== '' && isFinite(+el.value)) apply(+el.value);
+      delete el.dataset.esc; refreshNums();
+    });
+  }
+  function refreshNums() {
+    $('sizeNum').value = Math.round(st.size * 100); $('rotNum').value = Math.round(st.rot * 10) / 10;
+    $('qualNum').value = $('quality').value; if (st.kind && st.kind !== 'image') { syncTime(); syncFps(); }
+  }
+  onNum('sizeNum', v => setSize(v / 100));
+  onNum('rotNum', v => setRot(v));
+  onNum('startNum', v => { $('start').value = clamp(v, 0, +$('start').max); syncTime(); updateEstimate(); });
+  onNum('lenNum', v => { $('len').value = clamp(v, 0.1, duration() - +$('start').value); syncTime(); updateEstimate(); });
+  onNum('qualNum', v => { $('quality').value = clamp(Math.round(v), 1, 100); fill('quality'); updateEstimate(); });
+  // own frame rate: allowed, but never above the source (max. 20)
+  onNum('fpsNum', v => { st.fps = clamp(v, 1, maxFps()); syncFps(); updateEstimate(); });
+
+  // phone: the small status line above the preview only appears once the orange bar has scrolled away
+  let barVisible = true;
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver(es => { barVisible = es[0].isIntersecting; renderConn(); }).observe($('devBar'));
+  }
+
+  // init
+  $('qualNum').value = $('quality').value; fill('quality');
+  renderConn(); updateSendBtn(); sizeCanvas();
+  if (!navigator.bluetooth) showTop('Note: Bluetooth only works in Google Chrome or Edge (Mac/PC/Android). Safari, Firefox and iPhone browsers do not support it.');
+})();
+
+</script>
+<script>
+// installed-app support (only works when the page is served over https, e.g. GitHub Pages)
+if ('serviceWorker' in navigator && location.protocol !== 'file:') navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
