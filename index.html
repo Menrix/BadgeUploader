@@ -880,14 +880,12 @@ if (typeof module !== 'undefined') module.exports = BadgeCore;
   // ---------- settings of one item / of the whole gallery ----------
   function setIpi(v) {
     st.ipi = clamp(Math.round(v * 10) / 10, 0.1, 60);
-    st.items.forEach(it => { if (it.time === st.ipi) it.time = null; });   // same as the default = no own time any more
     restartAt(st.sel);
     renderGallery(); renderChips(); renderItemOpts(); renderEstimate();
   }
   function setItemTime(v) {                     // null = use "Time per image"
     const it = cur(); if (!it || it.kind !== 'image') return;
     it.time = v == null ? null : clamp(Math.round(v * 10) / 10, 0.1, 60);
-    if (it.time === st.ipi) it.time = null;
     renderGallery(); renderChips(); renderItemOpts(); renderEstimate();
   }
   function setLoops(v) {
@@ -965,7 +963,8 @@ if (typeof module !== 'undefined') module.exports = BadgeCore;
       if (it.thumb) b.appendChild(it.thumb);
       if (isMotion(it)) { const p = document.createElement('span'); p.className = 'play'; p.innerHTML = ICON_PLAY; b.appendChild(p); }
       // a small orange mark when this item has its own time / plays more than once
-      if (n > 1 && it.kind === 'image' && it.time != null) { const m = document.createElement('span'); m.className = 'mark'; m.title = `Own time: ${fmtSec(it.time)}`; m.innerHTML = ICON_CLOCK; b.appendChild(m); }
+      // an own time is kept even when it equals the default; the clock only shows while it differs
+      if (n > 1 && it.kind === 'image' && it.time != null && it.time !== st.ipi) { const m = document.createElement('span'); m.className = 'mark'; m.title = `Own time: ${fmtSec(it.time)}`; m.innerHTML = ICON_CLOCK; b.appendChild(m); }
       if (n > 1 && isMotion(it) && it.loops > 1) { const m = document.createElement('span'); m.className = 'mark'; m.title = `Plays ${it.loops}×`; m.textContent = it.loops + '×'; b.appendChild(m); }
       const no = document.createElement('span'); no.className = 'no'; no.textContent = i + 1; b.appendChild(no);
       const x = document.createElement('button'); x.className = 'x'; x.textContent = '×'; x.title = 'Remove';
