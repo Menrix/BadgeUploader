@@ -1,6 +1,23 @@
-# badge/uploader
+<p align="center">
+  <img src="icons/icon-192.png" alt="" width="96">
+</p>
 
-Send images, GIFs and videos from your computer or Android phone to a round Bluetooth **e-badge** – straight from the browser, without the manufacturer's app, without an account and without any cloud.
+<h1 align="center">badge/uploader</h1>
+
+<p align="center">
+  <b>Images, GIFs, videos and galleries for round Bluetooth e-badges – straight from the browser.</b><br>
+  No manufacturer app · no account · no cloud
+</p>
+
+<p align="center">
+  <a href="https://menrix.github.io/BadgeUploader/"><img src="https://img.shields.io/badge/▶_Open_the_app-FF8A3D?style=for-the-badge" alt="Open the app"></a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/version-1.0.0-3BA7F5" alt="Version 1.0.0">
+  <img src="https://img.shields.io/badge/license-MIT-lightgrey" alt="MIT license">
+  <img src="https://img.shields.io/badge/runs_in-Chrome_·_Edge-555" alt="Runs in Chrome and Edge">
+</p>
 
 <p align="center">
   <img src="docs/desktop.png" alt="badge/uploader on a desktop browser" width="640">
@@ -8,122 +25,99 @@ Send images, GIFs and videos from your computer or Android phone to a round Blue
   <img src="docs/mobile.png" alt="badge/uploader on an Android phone" width="200">
 </p>
 
-**Version 1.0.0** · **Live version:** https://menrix.github.io/BadgeUploader/ – can be [installed as an app](#install-as-an-app-mac-windows-android).
-(Or download `index.html` and open it in Chrome – the app itself is one single file.)
-
 ---
 
-## Why badge/uploader?
-
-Compared with the badge's original phone app (NN family / beamBox):
-
-| | Original app | badge/uploader |
-|---|---|---|
-| Choosing files | only from the phone's photo library | **any file from your computer** – drag & drop, several at once |
-| Video length | cut to **3 seconds** | **as long as the badge's memory allows** (10 s and more tested) |
-| Frame rate | fixed | choose it – smooth presets calculated from your video |
-| Image quality | fixed | adjustable from 1 to 100, to make files smaller or sharper |
-| Preview | of the picture only | **live preview of the real result**, incl. quality and frame rate |
-| Not enough space | warning message | **checked before sending**, with one click to shorten to what fits |
-| Gallery / slideshow | images only, fixed 3 s per image | **images, GIFs and videos mixed**, time per image adjustable, **single images can stay longer**, **videos can play several times**, live slideshow preview, drag to reorder |
-| Crop | basic | move, resize **and rotate** freely |
-| Runs on | iPhone / Android (iPhone app also on Apple-silicon Macs) | **any Mac, Windows PC, Chromebook or Android** with Chrome or Edge |
-| Account | sign-up or guest mode | **none** |
-| Internet | app with online features | **not needed** – works offline once loaded |
-| Your files | handled by the manufacturer's app | **never leave your device** |
-| Source code | closed | **open source** (MIT) |
-
-## Features
-
-- **Images, GIFs and videos** (JPG, PNG, WebP, GIF, MP4, MOV) – **videos longer than 3 seconds**.
-- **Gallery (slideshow)** – drop several files at once: images, GIFs and videos can be mixed. They appear as small thumbnails (videos with a ▶ sign); the preview plays them one after another and marks the current one. Click a thumbnail to stop on it and adjust it – click anywhere else and the slideshow plays on.
-  - Every item has its own crop.
-  - **Time per image** applies to all images; a single image can get its **own time** (marked with a small clock on its thumbnail).
-  - Videos and GIFs keep their own start and length and can **play several times** (1×, 2×, 3× …) before the next item.
-  - Drag thumbnails to change the order, remove one with its ×. All files sit in one **Files** block next to the preview – also a single file. Dropping more files anywhere on the page adds them; **Start over** begins with an empty page.
-  - Settings that do not fit the selected item (e.g. video settings while an image is selected) are dimmed.
-  - The gallery always loops on the badge. Repeated pictures are stored only once, so long images and repeated videos cost almost no memory.
-- **Files straight from your computer** – no need to copy them to a phone's photo library first.
-- **Live preview of the real result** – the circle shows exactly what the badge will display, including the chosen JPEG quality and frame rate.
-- **Crop** – move, resize and rotate. Desktop: drag, mouse wheel, double-click to reset. Phone: one finger to move, two fingers to resize and rotate, double-tap to reset.
-- **Smooth frame rates** – the frame-rate buttons are calculated from the source video (every 2nd, 3rd, 4th frame …), so motion stays even. Your own value can be typed in (max. 20 fps, never more than the source).
-- **Size check before sending** – the expected size is compared with the free space on the badge. If it does not fit, the send button turns red and offers to shorten the video automatically.
-- **Clear error handling** – lost connection or failed upload are shown on the send button, with one click to reconnect or try again.
-- **Works offline** – everything runs locally in your browser. Nothing is uploaded anywhere.
-
-## Compatibility
+## ✨ Features
 
 | | |
 |---|---|
-| **Tested with** | NIKKO Dynamic E-Badge (1.8″ round IPS, 360 × 360 px) |
-| **Should work with** | other Bluetooth badges that are used with the **NN family** or **beamBox** app (Beambox “NN Family” series, e.g. Nikko, Nano, Niji). These use the same round 360 × 360 display. |
-| **Not tested** | Neo / Neo AI models (they also offer Wi-Fi transfer and may behave differently). |
+| 🎬 **Long videos** | no 3-second limit – as long as the badge's memory allows |
+| 🖼️ **Mixed galleries** | images, GIFs and videos in one slideshow, always looping |
+| ⏱️ **Own timing** | time per image, single images can stay longer, videos can play 2×, 3× … |
+| ✂️ **Crop** | move, resize and rotate – mouse, wheel or two fingers |
+| 👁️ **Live preview** | shows the real result incl. quality, frame rate and slideshow |
+| 💾 **Size check** | compared with the badge's free space before sending |
+| 📂 **Your files** | straight from your computer, drag & drop, several at once |
+| 🔒 **Private** | runs offline in your browser – nothing is uploaded anywhere |
 
-If you try it with another badge, please open an issue and tell us whether it works.
+## 🆚 Compared with the original app
 
-## Requirements
+| | NN family / beamBox app | badge/uploader |
+|---|---|---|
+| Videos | cut to 3 s | **any length** that fits |
+| Galleries | images only, fixed 3 s | **images + videos**, own time per item, repeats |
+| Files | phone photo library | **any file**, drag & drop |
+| Quality & frame rate | fixed | **adjustable** |
+| Runs on | phone | **Mac, Windows, Chromebook, Android** |
+| Account / cloud | yes | **none** |
+| Source code | closed | **open source** |
 
-Bluetooth in the browser (“Web Bluetooth”) is only available in Chromium-based browsers:
+## 🚀 Get started
 
-| Browser | macOS | Windows | ChromeOS | Android | Linux | iPhone / iPad |
+1. **Close the manufacturer's app** – the badge accepts only one connection.
+2. Open the **[app](https://menrix.github.io/BadgeUploader/)** in Chrome or Edge and click **Connect device**.
+3. **Drop files** onto the page – several files become a gallery.
+4. Adjust, check the preview, click **Send to badge**.
+
+> 💡 **Too large?** Fewer frames/sec first, then lower quality. **Transfer stops?** Choose *Safe* speed.
+> Bluetooth is slow (≈ 30 KB/s) – a few seconds of video can take a minute.
+
+<details>
+<summary><b>🖥️ Which browsers work?</b></summary>
+<br>
+
+Bluetooth in the browser (“Web Bluetooth”) only exists in Chromium-based browsers.
+
+| | macOS | Windows | ChromeOS | Android | Linux | iPhone / iPad |
 |---|---|---|---|---|---|---|
-| Chrome / Edge / Opera | ✅ | ✅ | ✅ | ✅ | ⚠️ may need to be enabled in `chrome://flags` | ❌ |
-| Safari, Firefox | ❌ | ❌ | – | ❌ | ❌ | ❌ |
+| Chrome / Edge / Opera | ✅ | ✅ | ✅ | ✅ | ⚠️ enable in `chrome://flags` | ❌ |
+| Safari / Firefox | ❌ | ❌ | – | ❌ | ❌ | ❌ |
 
-On iPhone and iPad, Safari, Chrome and all other regular browsers do not support Web Bluetooth (Apple requires all of them to use Safari's engine). Special browsers such as **Bluefy** (App Store) add Web Bluetooth themselves and might work – this is **untested**.
-On macOS, Chrome may ask for Bluetooth permission the first time (System Settings → Privacy & Security → Bluetooth).
+On iPhone/iPad every browser uses Safari's engine, so it does not work. Special browsers like **Bluefy** might – untested.
+On macOS, Chrome may ask once for Bluetooth permission (System Settings → Privacy & Security → Bluetooth).
+</details>
 
-## Install as an app (Mac, Windows, Android)
+<details>
+<summary><b>📲 Install as an app</b></summary>
+<br>
 
-badge/uploader can be installed like a normal app – with its own icon in the Dock / Start menu / home screen, its own window and offline start. Bluetooth works the same as in the browser.
+Own icon, own window, starts offline – Bluetooth works the same.
 
-- **Mac / Windows (Chrome or Edge):** open the live version and click the install icon at the right end of the address bar (or menu ⋮ → *Cast, save and share* → *Install page as app*).
-- **Android (Chrome):** menu ⋮ → *Add to home screen* / *Install app*.
-- **iPhone / iPad:** not possible – see [Requirements](#requirements).
+- **Mac / Windows:** open the app in Chrome or Edge → install icon at the right end of the address bar.
+- **Android:** Chrome menu ⋮ → *Install app*.
 
-Installing only works from the live version (https), not from a downloaded file.
+Only works from the live version (https). Alternatively download `index.html` and open it in Chrome – the whole app is this one file.
+</details>
 
-## How to use
+<details>
+<summary><b>🏷️ Which badges?</b></summary>
+<br>
 
-1. **Close the manufacturer's app** – the badge accepts only one connection at a time.
-2. Open the page in Chrome and click **Connect device**. Choose your badge in the Bluetooth window.
-3. **Drop an image, GIF or video** onto the page (or click to choose a file). Several files at once become a **gallery**.
-4. Adjust the crop, start and length, frames per second (or the time per image) and quality. The preview shows the result.
-5. Click **Send to badge**.
+- **Tested:** NIKKO Dynamic E-Badge (1.8″ round IPS, 360 × 360 px)
+- **Should work:** other badges used with the **NN family** or **beamBox** app (e.g. Nikko, Nano, Niji – same round 360 × 360 display)
+- **Untested:** Neo / Neo AI (also have Wi-Fi, may behave differently)
 
-### Tips
+Tried another badge? Please open an issue and tell us.
+</details>
 
-- **File too large?** Lower the frames per second first (halves the size), then the quality.
-- **Transfer stops?** Choose **Safe** as transfer speed.
-- Uploading is limited by Bluetooth: roughly **30 KB per second**. A few seconds of video can take a minute.
+<details>
+<summary><b>⚠️ Limitations</b></summary>
+<br>
 
-## Privacy
+The badge's content cannot be listed, downloaded or deleted from here (those Bluetooth commands are unknown) – use the badge's own menu.
+</details>
 
-The page has no server, no tracking and no account. Your files never leave your computer – they are converted in the browser and sent directly to the badge via Bluetooth.
+## 🔧 How it works
 
-## Limitations
+The protocol was worked out by recording the original app's Bluetooth traffic: plain JSON commands plus JPEG frames in small numbered packets. Videos and galleries are frame sequences; repeated pictures are stored only once. Details in **[PROTOCOL.md](PROTOCOL.md)**.
 
-- The badge's content cannot be listed, downloaded or deleted from the page (the Bluetooth commands for that are unknown). Use the badge's own menu to delete files.
+## 📜 Version history
 
-## How it works
+- **1.0.0** – first release
 
-The Bluetooth protocol was worked out by recording the communication between the original app and the badge. It is plain and unencrypted: JSON commands plus JPEG images, split into small numbered packets with a simple checksum. Videos are sent as a sequence of JPEG frames.
+## 🙌 Credits & license
 
-Details: **[PROTOCOL.md](PROTOCOL.md)**
+Made by **Don_Key_Moustache** · built with the help of [Claude Code](https://claude.com/claude-code) (Anthropic)
+[MIT license](LICENSE) – free to use, change and share, without warranty.
 
-## Version history
-
-- **1.0.0** – first release: images, GIFs and videos, crop and rotate, galleries with mixed images and videos, own time per image, repeated videos, size check, installable as an app.
-
-## Credits
-
-Made by **Don_Key_Moustache**.
-Built with the help of [Claude Code](https://claude.com/claude-code) (Anthropic).
-
-## License
-
-[MIT](LICENSE) – free to use, change and share, without any warranty.
-
----
-
-*This is an independent project. It is not affiliated with, endorsed by or connected to Beambox, Shenzhen Guangsheng Artificial Intelligence Technology Co., Ltd. or the sellers of these badges. All product names and trademarks belong to their respective owners and are used only to describe compatibility.*
+<sub>Independent project – not affiliated with Beambox, Shenzhen Guangsheng Artificial Intelligence Technology Co., Ltd. or the sellers of these badges. Product names and trademarks belong to their owners and are only used to describe compatibility.</sub>
