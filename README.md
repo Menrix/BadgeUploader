@@ -5,8 +5,13 @@
 <h1 align="center">badge/uploader</h1>
 
 <p align="center">
-  <b>Images, GIFs, videos and galleries for round Bluetooth e-badges – straight from the browser.</b><br>
+  <b>Put any video on your round e-badge. No 3-second limit, no app.</b><br>
+  Images, GIFs, videos and galleries for round Bluetooth e-badges – straight from the browser.<br>
   No manufacturer app · no account · no cloud
+</p>
+
+<p align="center">
+  <img src="docs/demo.gif" alt="A video gallery playing on the round e-badge" width="320">
 </p>
 
 <p align="center">
